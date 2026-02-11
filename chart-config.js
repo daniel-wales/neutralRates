@@ -21,7 +21,19 @@ function updateChart(dates, datasets, variable) { ... }
 document.getElementById('countrySelect').addEventListener('change', handleChange);
 document.getElementById('variableSelect').addEventListener('change', handleChange);
 
+function initChart() {
+  populateDropdowns();
 
+  // Initial chart
+  loadCSV('bra_Data.csv', 'ii Rate');
+
+  // Event listeners
+  document.getElementById('countrySelect').addEventListener('change', handleChange);
+  document.getElementById('variableSelect').addEventListener('change', handleChange);
+}
+
+// Call initChart on page load
+initChart();
 
 function handleChange() {
   const file = document.getElementById('countrySelect').value;
