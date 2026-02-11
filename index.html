@@ -17,98 +17,93 @@
 <!-- Country Selector -->
 <label for="countrySelect">Select Country:</label>
 <select id="countrySelect">
-  <option value="bgd_Data.csv">Bangladesh</option>
-  <option value="blr_Data.csv">Belarus</option>
   <option value="bra_Data.csv">Brazil</option>
   <option value="chl_Data.csv">Chile</option>
-  <option value="col_Data.csv">Colombia</option>
-  <option value="cri_Data.csv">Costa Rica</option>
-  <option value="dom_Data.csv">Dominican Republic</option>
-  <option value="gtm_Data.csv">Guatemala</option>
-  <option value="hun_Data.csv">Hungary</option>
-  <option value="idn_Data.csv">Indonesia</option>
-  <option value="ind_Data.csv">India</option>
-  <option value="mex_Data.csv">Mexico</option>
-  <option value="mys_Data.csv">Malaysia</option>
-  <option value="nga_Data.csv">Nigeria</option>
-  <option value="pak_Data.csv">Pakistan</option>
-  <option value="per_Data.csv">Peru</option>
-  <option value="phl_Data.csv">Philippines</option>
-  <option value="pol_Data.csv">Poland</option>
-  <option value="pry_Data.csv">Paraguay</option>
-  <option value="rou_Data.csv">Romania</option>
-  <option value="srb_Data.csv">Serbia</option>
-  <option value="tha_Data.csv">Thailand</option>
-  <option value="tur_Data.csv">Turkey</option>
-  <option value="ury_Data.csv">Uruguay</option>
-  <option value="usa_Data.csv">United States</option>
-  <option value="vnm_Data.csv">Vietnam</option>
-  <option value="zaf_Data.csv">South Africa</option>
-};
-
-
-
-
-  
+  <!-- add more countries as needed -->
 </select>
 
 <!-- Variable Selector -->
 <label for="variableSelect">Select Variable:</label>
 <select id="variableSelect">
-  <option value="ii Rate">Nominal Interest Rate, i</option>
+  <option value="ii Rate">Nominal Interest Rate</option>
   <option value="CPI Level">Price Level</option>
-  <option value="Real GDP">Real GDP</option>
+  <option value="CPI Change">CPI Change</option>
+  <option value="GDP Change">Real GDP Change</option>
 </select>
 
-<!-- Chart -->
 <canvas id="myChart" width="900" height="400"></canvas>
 
 <script>
 let chart; // global Chart.js instance
 
-// Function to load CSV and update chart
 function loadCSV(file, variable) {
-  fetch('data/' + file) // fetch from data/ folder
+  fetch('data/' + file)
     .then(response => response.text())
     .then(csv => {
       const rows = csv.split('\n').slice(1); // skip header
 
       const dates = [];
-      const values = [];
+      const series1 = [];
+      const series2 = [];
 
       rows.forEach(row => {
         const cols = row.split(',');
-        if (cols.length >= 5) {
+        if (cols.length >= 9) { // ensure enough columns
           const year = cols[1];
           const month = cols[2];
           const ii = parseFloat(cols[3]);
           const cpi = parseFloat(cols[4]);
+          const cpiQoQ = parseFloat(cols[5]);
+          const cpiYoY = parseFloat(cols[6]);
+          const gdpQoQ = parseFloat(cols[7]);
+          const gdpYoY = parseFloat(cols[8]);
           const formattedDate = year + "-" + String(month).padStart(2,'0');
 
           dates.push(formattedDate);
+
           if (variable === "ii Rate") {
-            values.push(isNaN(ii) ? null : ii);
-          } else {
-            values.push(isNaN(cpi) ? null : cpi);
+            series1.push(isNaN(ii)?null:ii);
+          } else if (variable === "CPI Level") {
+            series1.push(isNaN(cpi)?null:cpi);
+          } else if (variable === "CPI Change") {
+            series1.push(isNaN(cpiQoQ)?null:cpiQoQ);
+            series2.push(isNaN(cpiYoY)?null:cpiYoY);
+          } else if (variable === "GDP Change") {
+            series1.push(isNaN(gdpQoQ)?null:gdpQoQ);
+            series2.push(isNaN(gdpYoY)?null:gdpYoY);
           }
         }
       });
 
-      // Destroy existing chart if it exists
+      // Destroy old chart if exists
       if (chart) chart.destroy();
 
-      // Create new chart
+      // Build datasets
+      const datasets = [];
+      if (series1.length) {
+        datasets.push({
+          label: (variable==="CPI Change" || variable==="GDP Change") ? "QoQ" : variable + " (" + file.replace('.csv','') + ")",
+          data: series1,
+          borderColor: 'blue',
+          backgroundColor: 'rgba(0,0,255,0.1)',
+          spanGaps: true
+        });
+      }
+      if (series2.length) {
+        datasets.push({
+          label: "YoY",
+          data: series2,
+          borderColor: 'red',
+          backgroundColor: 'rgba(255,0,0,0.1)',
+          spanGaps: true
+        });
+      }
+
       chart = new Chart(document.getElementById('myChart'), {
         type: 'line',
         data: {
           labels: dates,
-          datasets: [{
-            label: variable + " (" + file.replace('.csv','') + ")",
-            data: values,
-            borderColor: 'blue',
-            backgroundColor: 'rgba(0,0,255,0.1)',
-            spanGaps: true
-          }]
+          datasets: datasets
         },
         options: {
           responsive: true,
@@ -125,15 +120,13 @@ function loadCSV(file, variable) {
       });
 
     })
-    .catch(err => {
-      console.error("Error loading CSV:", err);
-    });
+    .catch(err => console.error("Error loading CSV:", err));
 }
 
 // Initial chart
 loadCSV('bra_Data.csv','ii Rate');
 
-// Event listeners for dropdowns
+// Event listeners
 document.getElementById('countrySelect').addEventListener('change', () => {
   const file = document.getElementById('countrySelect').value;
   const variable = document.getElementById('variableSelect').value;
