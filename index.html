@@ -1,18 +1,182 @@
 <!DOCTYPE html>
 <html>
 <head>
+<meta charset="UTF-8">
+<title>Economic Data Chart</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  body { font-family: Arial; padding: 20px; }
+  canvas { margin-top: 20px; }
+  select { margin-right: 20px; padding: 5px; }
+</style>
+</head>
 <body>
-  <h2>Economic Data Viewer</h2>
 
-  <label for="countrySelect">Select Country:</label>
-  <select id="countrySelect"></select>
+<h2>Economic Data Viewer</h2>
 
-  <label for="variableSelect">Select Variable:</label>
-  <select id="variableSelect"></select>
+<!-- Country Selector -->
+<label for="countrySelect">Select Country:</label>
+<select id="countrySelect">
+  <option value="bgd_Data.csv">Bangladesh</option>
+  <option value="blr_Data.csv">Belarus</option>
+  <option value="bra_Data.csv">Brazil</option>
+  <option value="chl_Data.csv">Chile</option>
+  <option value="col_Data.csv">Colombia</option>
+  <option value="cri_Data.csv">Costa Rica</option>
+  <option value="dom_Data.csv">Dominican Republic</option>
+  <option value="gtm_Data.csv">Guatemala</option>
+  <option value="hun_Data.csv">Hungary</option>
+  <option value="idn_Data.csv">Indonesia</option>
+  <option value="ind_Data.csv">India</option>
+  <option value="mex_Data.csv">Mexico</option>
+  <option value="mys_Data.csv">Malaysia</option>
+  <option value="nga_Data.csv">Nigeria</option>
+  <option value="pak_Data.csv">Pakistan</option>
+  <option value="per_Data.csv">Peru</option>
+  <option value="phl_Data.csv">Philippines</option>
+  <option value="pol_Data.csv">Poland</option>
+  <option value="pry_Data.csv">Paraguay</option>
+  <option value="rou_Data.csv">Romania</option>
+  <option value="srb_Data.csv">Serbia</option>
+  <option value="tha_Data.csv">Thailand</option>
+  <option value="tur_Data.csv">Turkey</option>
+  <option value="ury_Data.csv">Uruguay</option>
+  <option value="usa_Data.csv">United States</option>
+  <option value="vnm_Data.csv">Vietnam</option>
+  <option value="zaf_Data.csv">South Africa</option>
+</select>
 
-  <canvas id="myChart"></canvas>
+<!-- Variable Selector -->
+<label for="variableSelect">Select Variable:</label>
+<select id="variableSelect">
+  <option value="ii Rate">Nominal Interest Rate</option>
+  <option value="CPI Level">Price Level</option>
+  <option value="CPI Change">CPI Change</option>
+  <option value="GDP Change">Real GDP Change</option>
+</select>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="chart-config.js"></script>
+<canvas id="myChart" width="900" height="400"></canvas>
+
+<script>
+let chart; // global Chart.js instance
+
+function loadCSV(file, variable) {
+  fetch('data/' + file)
+    .then(response => response.text())
+    .then(csv => {
+      const lines = csv.trim().split('\n');
+      const header = lines[0].split(',');  // first row as header
+      const rows = lines.slice(1);
+
+      const dates = [];
+      const series = {}; // object to hold multiple series
+
+      // Initialize series object for every column after month
+      for (let i = 3; i < header.length; i++) {
+        series[header[i]] = [];
+      }
+
+      rows.forEach(row => {
+        const cols = row.split(',');
+        if (cols.length === header.length) {
+          const year = cols[1];
+          const month = cols[2];
+          const formattedDate = year + "-" + String(month).padStart(2,'0');
+          dates.push(formattedDate);
+
+          // fill all series
+          for (let i = 3; i < cols.length; i++) {
+            let val = parseFloat(cols[i]);
+            series[header[i]].push(isNaN(val)? null : val);
+          }
+        }
+      });
+
+      // Destroy old chart if exists
+      if (chart) chart.destroy();
+
+      // Build datasets depending on selected variable
+      const datasets = [];
+      if (variable === "ii Rate" || variable === "CPI Level") {
+        datasets.push({
+          label: variable + " (" + file.replace('_Data.csv','') + ")",
+          data: series[variable],
+          borderColor: 'blue',
+          backgroundColor: 'rgba(0,0,255,0.1)',
+          spanGaps: true
+        });
+      } else if (variable === "CPI Change") {
+        datasets.push({
+          label: "QoQ",
+          data: series['CPI QoQ'],
+          borderColor: 'blue',
+          backgroundColor: 'rgba(0,0,255,0.1)',
+          spanGaps: true
+        });
+        datasets.push({
+          label: "YoY",
+          data: series['CPI YoY'],
+          borderColor: 'red',
+          backgroundColor: 'rgba(255,0,0,0.1)',
+          spanGaps: true
+        });
+      } else if (variable === "GDP Change") {
+        datasets.push({
+          label: "QoQ",
+          data: series['GDP QoQ'],
+          borderColor: 'blue',
+          backgroundColor: 'rgba(0,0,255,0.1)',
+          spanGaps: true
+        });
+        datasets.push({
+          label: "YoY",
+          data: series['GDP YoY'],
+          borderColor: 'red',
+          backgroundColor: 'rgba(255,0,0,0.1)',
+          spanGaps: true
+        });
+      }
+
+      chart = new Chart(document.getElementById('myChart'), {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { 
+              ticks: { maxTicksLimit: 12 },
+              title: { display: true, text: 'Year-Month' }
+            },
+            y: {
+              title: { display: true, text: variable }
+            }
+          }
+        }
+      });
+
+    })
+    .catch(err => console.error("Error loading CSV:", err));
+}
+
+// Initial chart
+loadCSV('bra_Data.csv','ii Rate');
+
+// Event listeners
+document.getElementById('countrySelect').addEventListener('change', () => {
+  const file = document.getElementById('countrySelect').value;
+  const variable = document.getElementById('variableSelect').value;
+  loadCSV(file, variable);
+});
+
+document.getElementById('variableSelect').addEventListener('change', () => {
+  const file = document.getElementById('countrySelect').value;
+  const variable = document.getElementById('variableSelect').value;
+  loadCSV(file, variable);
+});
+</script>
+
 </body>
 </html>
