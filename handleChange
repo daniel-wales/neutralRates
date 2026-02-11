@@ -1,0 +1,5 @@
+function handleChange() {
+  const file = document.getElementById('countrySelect').value;
+  const variable = document.getElementById('variableSelect').value;
+  loadCSV(file, variable);
+}
