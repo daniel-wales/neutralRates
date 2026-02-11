@@ -1,0 +1,45 @@
+let chart; // global Chart.js instance
+
+function updateChart(dates, series1, series2, variable, file) {
+  if (chart) chart.destroy(); // destroy previous chart
+
+  const datasets = [];
+
+  if (series1.length) {
+    datasets.push({
+      label: (variable==="CPI Change" || variable==="GDP Change") ? "QoQ" : variable + " (" + file.replace('.csv','') + ")",
+      data: series1,
+      borderColor: 'blue',
+      backgroundColor: 'rgba(0,0,255,0.1)',
+      spanGaps: true
+    });
+  }
+
+  if (series2.length) {
+    datasets.push({
+      label: "YoY",
+      data: series2,
+      borderColor: 'red',
+      backgroundColor: 'rgba(255,0,0,0.1)',
+      spanGaps: true
+    });
+  }
+
+  chart = new Chart(document.getElementById('myChart'), {
+    type: 'line',
+    data: {
+      labels: dates,
+      datasets: datasets
+    },
+    options: {
+      responsive: true,
+      scales: {
+        x: { 
+          ticks: { maxTicksLimit: 12 },
+          title: { display: true, text: 'Year-Month' }
+        },
+        y: { title: { display: true, text: variable } }
+      }
+    }
+  });
+}
