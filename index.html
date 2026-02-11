@@ -2,93 +2,105 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Brazil Data</title>
-<script src=https://cdn.jsdelivr.net/npm/chart.js></script>
+<title>Economic Data Chart</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
   body { font-family: Arial; padding: 20px; }
-  canvas { margin-bottom: 50px; }
+  canvas { margin-top: 20px; }
+  select { margin-right: 20px; padding: 5px; }
 </style>
 </head>
 <body>
 
-<h2>II Rate</h2>
-<canvas id="iiChart"></canvas>
+<h2>Economic Data Viewer</h2>
 
-<h2>CPI Level</h2>
-<canvas id="cpiChart"></canvas>
+<label for="countrySelect">Select Country:</label>
+<select id="countrySelect">
+  <option value="braData.csv">Brazil</option>
+  <option value="chlData.csv">Chile</option>
+</select>
+
+<label for="variableSelect">Select Variable:</label>
+<select id="variableSelect">
+  <option value="ii Rate">II Rate</option>
+  <option value="CPI Level">CPI Level</option>
+</select>
+
+<canvas id="myChart" width="900" height="400"></canvas>
 
 <script>
-fetch('braData.csv')
-  .then(response => response.text())
-  .then(csv => {
+let chart; // global Chart.js instance
 
-    const rows = csv.split('\n').slice(1); // remove header
+// Function to load CSV and update chart
+function loadCSV(file, variable) {
+  fetch(file)
+    .then(response => response.text())
+    .then(csv => {
+      const rows = csv.split('\n').slice(1); // skip header
 
-    const dates = [];
-    const iiRates = [];
-    const cpiLevels = [];
+      const dates = [];
+      const values = [];
 
-    rows.forEach(row => {
-      const cols = row.split(',');
+      rows.forEach(row => {
+        const cols = row.split(',');
+        if (cols.length >= 5) {
+          const year = cols[1];
+          const month = cols[2];
+          const ii = parseFloat(cols[3]);
+          const cpi = parseFloat(cols[4]);
+          const formattedDate = year + "-" + String(month).padStart(2,'0');
 
-      if (cols.length >= 5) {
-        const year = cols[1];
-        const month = cols[2];
-        const ii = parseFloat(cols[3]);
-        const cpi = parseFloat(cols[4]);
-
-        const formattedDate = year + "-" + String(month).padStart(2, '0');
-
-        dates.push(formattedDate);
-
-        iiRates.push(isNaN(ii) ? null : ii);
-        cpiLevels.push(isNaN(cpi) ? null : cpi);
-      }
-    });
-
-    // II Rate Chart
-    new Chart(document.getElementById('iiChart'), {
-      type: 'line',
-      data: {
-        labels: dates,
-        datasets: [{
-          label: 'II Rate',
-          data: iiRates,
-          spanGaps: true
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          x: {
-            ticks: { maxTicksLimit: 12 }
+          dates.push(formattedDate);
+          if (variable === "ii Rate") {
+            values.push(isNaN(ii) ? null : ii);
+          } else {
+            values.push(isNaN(cpi) ? null : cpi);
           }
         }
-      }
-    });
+      });
 
-    // CPI Level Chart
-    new Chart(document.getElementById('cpiChart'), {
-      type: 'line',
-      data: {
-        labels: dates,
-        datasets: [{
-          label: 'CPI Level',
-          data: cpiLevels,
-          spanGaps: true
-        }]
-      },
-      options: {
-        responsive: true,
-        scales: {
-          x: {
-            ticks: { maxTicksLimit: 12 }
+      // If chart exists, destroy before creating new
+      if (chart) chart.destroy();
+
+      // Create new chart
+      chart = new Chart(document.getElementById('myChart'), {
+        type: 'line',
+        data: {
+          labels: dates,
+          datasets: [{
+            label: variable + " (" + file.replace('.csv','') + ")",
+            data: values,
+            borderColor: 'blue',
+            backgroundColor: 'rgba(0,0,255,0.1)',
+            spanGaps: true
+          }]
+        },
+        options: {
+          responsive: true,
+          scales: {
+            x: { ticks: { maxTicksLimit: 12 } }
           }
         }
-      }
-    });
+      });
 
-  });
+    });
+}
+
+// Initial chart
+loadCSV('braData.csv','ii Rate');
+
+// Event listeners for dropdowns
+document.getElementById('countrySelect').addEventListener('change', () => {
+  const file = document.getElementById('countrySelect').value;
+  const variable = document.getElementById('variableSelect').value;
+  loadCSV(file, variable);
+});
+
+document.getElementById('variableSelect').addEventListener('change', () => {
+  const file = document.getElementById('countrySelect').value;
+  const variable = document.getElementById('variableSelect').value;
+  loadCSV(file, variable);
+});
 </script>
 
 </body>
