@@ -1,27 +1,46 @@
 // =======================
-// 1. Setup dropdowns
+// 1. Global chart variable
 // =======================
-
-// Populate country and variable dropdowns
-function populateDropdowns() { ... }
+let chart; // global Chart.js instance
 
 // =======================
-// 2. CSV loader
+// 2. Populate dropdowns
 // =======================
-function loadCSV(file, variable) { ... }
+function populateDropdowns() {
+  const countries = [
+    { file: "bra_Data.csv", name: "Brazil" },
+    { file: "chl_Data.csv", name: "Chile" },
+    // add more countries here
+  ];
+  
+  const variables = [
+    { value: "ii Rate", label: "Nominal Interest Rate" },
+    { value: "CPI Level", label: "Price Level" },
+    { value: "CPI Change", label: "CPI Change" },
+    { value: "GDP Change", label: "Real GDP Change" }
+  ];
+  
+  const countrySelect = document.getElementById('countrySelect');
+  const variableSelect = document.getElementById('variableSelect');
+  
+  countries.forEach(c => {
+    const option = document.createElement('option');
+    option.value = c.file;
+    option.textContent = c.name;
+    countrySelect.appendChild(option);
+  });
+  
+  variables.forEach(v => {
+    const option = document.createElement('option');
+    option.value = v.value;
+    option.textContent = v.label;
+    variableSelect.appendChild(option);
+  });
+}
 
 // =======================
-// 3. Chart updater
+// 3. Load CSV
 // =======================
-function updateChart(dates, datasets, variable) { ... }
-
-// =======================
-// 4. Event listeners
-// =======================
-document.getElementById('countrySelect').addEventListener('change', handleChange);
-document.getElementById('variableSelect').addEventListener('change', handleChange);
-
-
 function loadCSV(file, variable) {
   fetch('data/' + file)
     .then(response => response.text())
@@ -64,61 +83,9 @@ function loadCSV(file, variable) {
     .catch(err => console.error("Error loading CSV:", err));
 }
 
-
-function initChart() {
-  populateDropdowns();
-
-  // Initial chart
-  loadCSV('bra_Data.csv', 'ii Rate');
-
-  // Event listeners
-  document.getElementById('countrySelect').addEventListener('change', handleChange);
-  document.getElementById('variableSelect').addEventListener('change', handleChange);
-}
-
-// Call initChart on page load
-initChart();
-
-function handleChange() {
-  const file = document.getElementById('countrySelect').value;
-  const variable = document.getElementById('variableSelect').value;
-  loadCSV(file, variable);
-}
-
-function populateDropdowns() {
-  const countries = [
-    { file: "bra_Data.csv", name: "Brazil" },
-    { file: "chl_Data.csv", name: "Chile" },
-    // add more countries here
-  ];
-  
-  const variables = [
-    { value: "ii Rate", label: "Nominal Interest Rate" },
-    { value: "CPI Level", label: "Price Level" },
-    { value: "CPI Change", label: "CPI Change" },
-    { value: "GDP Change", label: "Real GDP Change" }
-  ];
-  
-  const countrySelect = document.getElementById('countrySelect');
-  const variableSelect = document.getElementById('variableSelect');
-  
-  countries.forEach(c => {
-    const option = document.createElement('option');
-    option.value = c.file;
-    option.textContent = c.name;
-    countrySelect.appendChild(option);
-  });
-  
-  variables.forEach(v => {
-    const option = document.createElement('option');
-    option.value = v.value;
-    option.textContent = v.label;
-    variableSelect.appendChild(option);
-  });
-}
-
-let chart; // global Chart.js instance
-
+// =======================
+// 4. Update chart
+// =======================
 function updateChart(dates, series1, series2, variable, file) {
   if (chart) chart.destroy(); // destroy previous chart
 
@@ -162,3 +129,29 @@ function updateChart(dates, series1, series2, variable, file) {
     }
   });
 }
+
+// =======================
+// 5. Handle dropdown changes
+// =======================
+function handleChange() {
+  const file = document.getElementById('countrySelect').value;
+  const variable = document.getElementById('variableSelect').value;
+  loadCSV(file, variable);
+}
+
+// =======================
+// 6. Initialize chart
+// =======================
+function initChart() {
+  populateDropdowns();
+
+  // Initial chart
+  loadCSV('bra_Data.csv', 'ii Rate');
+
+  // Event listeners
+  document.getElementById('countrySelect').addEventListener('change', handleChange);
+  document.getElementById('variableSelect').addEventListener('change', handleChange);
+}
+
+// Call initChart on page load
+initChart();
