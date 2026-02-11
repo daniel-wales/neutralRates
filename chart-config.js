@@ -20,3 +20,11 @@ function updateChart(dates, datasets, variable) { ... }
 // =======================
 document.getElementById('countrySelect').addEventListener('change', handleChange);
 document.getElementById('variableSelect').addEventListener('change', handleChange);
+
+
+
+function handleChange() {
+  const file = document.getElementById('countrySelect').value;
+  const variable = document.getElementById('variableSelect').value;
+  loadCSV(file, variable);
+}
