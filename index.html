@@ -14,18 +14,21 @@
 
 <h2>Economic Data Viewer</h2>
 
+<!-- Country Selector -->
 <label for="countrySelect">Select Country:</label>
 <select id="countrySelect">
   <option value="braData.csv">Brazil</option>
   <option value="chlData.csv">Chile</option>
 </select>
 
+<!-- Variable Selector -->
 <label for="variableSelect">Select Variable:</label>
 <select id="variableSelect">
   <option value="ii Rate">II Rate</option>
   <option value="CPI Level">CPI Level</option>
 </select>
 
+<!-- Chart -->
 <canvas id="myChart" width="900" height="400"></canvas>
 
 <script>
@@ -33,7 +36,7 @@ let chart; // global Chart.js instance
 
 // Function to load CSV and update chart
 function loadCSV(file, variable) {
-  fetch(file)
+  fetch('data/' + file) // fetch from data/ folder
     .then(response => response.text())
     .then(csv => {
       const rows = csv.split('\n').slice(1); // skip header
@@ -59,7 +62,7 @@ function loadCSV(file, variable) {
         }
       });
 
-      // If chart exists, destroy before creating new
+      // Destroy existing chart if it exists
       if (chart) chart.destroy();
 
       // Create new chart
@@ -78,11 +81,20 @@ function loadCSV(file, variable) {
         options: {
           responsive: true,
           scales: {
-            x: { ticks: { maxTicksLimit: 12 } }
+            x: { 
+              ticks: { maxTicksLimit: 12 },
+              title: { display: true, text: 'Year-Month' }
+            },
+            y: {
+              title: { display: true, text: variable }
+            }
           }
         }
       });
 
+    })
+    .catch(err => {
+      console.error("Error loading CSV:", err);
     });
 }
 
