@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Brazil Data</title>
+<script src=https://cdn.jsdelivr.net/npm/chart.js></script>
+<style>
+  body { font-family: Arial; padding: 20px; }
+  canvas { margin-bottom: 50px; }
+</style>
+</head>
+<body>
+
+<h2>II Rate</h2>
+<canvas id="iiChart"></canvas>
+
+<h2>CPI Level</h2>
+<canvas id="cpiChart"></canvas>
+
+<script>
+fetch('braData.csv')
+  .then(response => response.text())
+  .then(csv => {
+
+    const rows = csv.split('\n').slice(1); // remove header
+
+    const dates = [];
+    const iiRates = [];
+    const cpiLevels = [];
+
+    rows.forEach(row => {
+      const cols = row.split(',');
+
+      if (cols.length >= 5) {
+        const year = cols[1];
+        const month = cols[2];
+        const ii = parseFloat(cols[3]);
+        const cpi = parseFloat(cols[4]);
+
+        const formattedDate = year + "-" + String(month).padStart(2, '0');
+
+        dates.push(formattedDate);
+
+        iiRates.push(isNaN(ii) ? null : ii);
+        cpiLevels.push(isNaN(cpi) ? null : cpi);
+      }
+    });
+
+    // II Rate Chart
+    new Chart(document.getElementById('iiChart'), {
+      type: 'line',
+      data: {
+        labels: dates,
+        datasets: [{
+          label: 'II Rate',
+          data: iiRates,
+          spanGaps: true
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            ticks: { maxTicksLimit: 12 }
+          }
+        }
+      }
+    });
+
+    // CPI Level Chart
+    new Chart(document.getElementById('cpiChart'), {
+      type: 'line',
+      data: {
+        labels: dates,
+        datasets: [{
+          label: 'CPI Level',
+          data: cpiLevels,
+          spanGaps: true
+        }]
+      },
+      options: {
+        responsive: true,
+        scales: {
+          x: {
+            ticks: { maxTicksLimit: 12 }
+          }
+        }
+      }
+    });
+
+  });
+</script>
+
+</body>
+</html>
