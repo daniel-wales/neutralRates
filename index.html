@@ -17,8 +17,8 @@
 <!-- Country Selector -->
 <label for="countrySelect">Select Country:</label>
 <select id="countrySelect">
-  <option value="braData.csv">Brazil</option>
-  <option value="chlData.csv">Chile</option>
+  <option value="bra_Data.csv">Brazil</option>
+  <option value="chl_Data.csv">Chile</option>
 </select>
 
 <!-- Variable Selector -->
@@ -99,7 +99,7 @@ function loadCSV(file, variable) {
 }
 
 // Initial chart
-loadCSV('braData.csv','ii Rate');
+loadCSV('bra_Data.csv','ii Rate');
 
 // Event listeners for dropdowns
 document.getElementById('countrySelect').addEventListener('change', () => {
