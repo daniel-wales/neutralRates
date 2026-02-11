@@ -1,0 +1,31 @@
+function populateDropdowns() {
+  const countries = [
+    { file: "bra_Data.csv", name: "Brazil" },
+    { file: "chl_Data.csv", name: "Chile" },
+    // add more countries here
+  ];
+  
+  const variables = [
+    { value: "ii Rate", label: "Nominal Interest Rate" },
+    { value: "CPI Level", label: "Price Level" },
+    { value: "CPI Change", label: "CPI Change" },
+    { value: "GDP Change", label: "Real GDP Change" }
+  ];
+  
+  const countrySelect = document.getElementById('countrySelect');
+  const variableSelect = document.getElementById('variableSelect');
+  
+  countries.forEach(c => {
+    const option = document.createElement('option');
+    option.value = c.file;
+    option.textContent = c.name;
+    countrySelect.appendChild(option);
+  });
+  
+  variables.forEach(v => {
+    const option = document.createElement('option');
+    option.value = v.value;
+    option.textContent = v.label;
+    variableSelect.appendChild(option);
+  });
+}
