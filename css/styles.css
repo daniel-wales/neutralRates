@@ -55,6 +55,14 @@ canvas {
   width: 100%;
 }
 
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 900px;   /* limits width on large screens */
+  height: 450px;      /* controls height */
+  margin: 30px auto;  /* centers and adds spacing */
+}
+
 /* ========================= */
 /* 📱 Mobile Improvements    */
 /* ========================= */
