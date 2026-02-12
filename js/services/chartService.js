@@ -15,45 +15,33 @@ export function renderChart(ctx, datasets, labels) {
         intersect: false
       },
       plugins: {
-        legend: {
-          position: "top",
-          labels: {
-            usePointStyle: true,
-            boxWidth: 8,
-            padding: 15
+        legend: { position: "top" },
+        tooltip: { mode: "index", intersect: false },
+
+        // 🔹 Zoom plugin configuration
+        zoom: {
+          pan: {
+            enabled: true,
+            mode: "x",      // pan horizontally
+            modifierKey: "ctrl" // optional: only pan when holding Ctrl
+          },
+          zoom: {
+            wheel: { enabled: true }, // zoom with mouse wheel / touchpad
+            pinch: { enabled: true }, // zoom with pinch gestures
+            mode: "x"
           }
-        },
-        tooltip: {
-          mode: "index",
-          intersect: false,
-          padding: 10,
-          titleFont: { size: 14, weight: "600" },
-          bodyFont: { size: 13 }
         }
       },
       elements: {
-        line: {
-          borderWidth: 2,
-          tension: 0.3  // smooth lines
-        },
-        point: {
-          radius: 0,          // hides points for clean look
-          hoverRadius: 5,
-          hoverBorderWidth: 2
-        }
+        line: { borderWidth: 2, tension: 0.3 },
+        point: { radius: 0, hoverRadius: 5 }
       },
       scales: {
-        x: {
-          grid: { display: false },
-          ticks: { maxTicksLimit: 10 },
-          title: { display: true, text: "Year-Month", font: { weight: "500" } }
-        },
-        y: {
-          grid: { color: "rgba(0,0,0,0.05)" },
-          title: { display: true, text: "", font: { weight: "500" } }
-        }
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 10 }, title: { display: true, text: "Year-Month" } },
+        y: { grid: { color: "rgba(0,0,0,0.05)" }, title: { display: true, text: "" } }
       }
-    }
+    },
+    plugins: [Chart.Zoom] // make sure plugin is registered
   });
 
   return chart;
