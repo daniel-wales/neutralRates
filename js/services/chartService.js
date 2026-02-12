@@ -1,5 +1,10 @@
 import { colors } from "../config/variables.js";
 
+// Register zoom plugin from CDN (required for ES modules)
+if (window.ChartZoom) {
+  Chart.register(window.ChartZoom);
+}
+
 let chart = null;
 
 export function renderChart(ctx, datasets, labels) {
