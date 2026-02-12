@@ -15,6 +15,7 @@ export function renderChart(ctx, datasets, labels) {
     data: { labels, datasets },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       interaction: {
         mode: "index",
         intersect: false
