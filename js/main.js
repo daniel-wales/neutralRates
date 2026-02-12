@@ -91,3 +91,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initial render
   updateChart();
 });
+
+document.getElementById("resetZoom").addEventListener("click", () => {
+  const chart = getChartInstance();
+  if (chart) chart.resetZoom();
+});
