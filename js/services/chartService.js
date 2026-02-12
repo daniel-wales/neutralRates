@@ -25,14 +25,27 @@ export function renderChart(ctx, datasets, labels) {
 
         // 🔹 Zoom plugin configuration
         zoom: {
+          limits: {
+            x: { min: "original", max: "original" },
+            y: { min: "original", max: "original" }
+          },
           pan: {
             enabled: true,
-            mode: "x",      // pan horizontally
-            modifierKey: "ctrl" // optional: only pan when holding Ctrl
+            mode: "x",
+            threshold: 5
           },
           zoom: {
-            wheel: { enabled: true }, // zoom with mouse wheel / touchpad
-            pinch: { enabled: true }, // zoom with pinch gestures
+            wheel: {
+              enabled: true,
+              speed: 0.1   // smoother zoom
+            },
+            pinch: {
+              enabled: true
+            },
+            drag: {
+              enabled: true,
+              backgroundColor: "rgba(31, 119, 180, 0.1)"
+            },
             mode: "x"
           }
         }
