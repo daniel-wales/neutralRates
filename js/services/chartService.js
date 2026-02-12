@@ -41,7 +41,6 @@ export function renderChart(ctx, datasets, labels) {
         y: { grid: { color: "rgba(0,0,0,0.05)" }, title: { display: true, text: "" } }
       }
     },
-    plugins: [Chart.Zoom] // make sure plugin is registered
   });
 
   return chart;
