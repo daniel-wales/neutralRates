@@ -1,49 +1,18 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Economic Data Viewer</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Economic Data Viewer</title>
 
-<script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
 
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    padding: 20px;
-    background: #f4f6f9;
-  }
+  <!-- Our CSS -->
+  <link rel="stylesheet" href="css/styles.css">
 
-  h2 { margin-bottom: 15px; }
-
-  .controls {
-    margin-bottom: 20px;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
-    align-items: flex-start;
-  }
-
-  select {
-    padding: 6px 10px;
-    min-width: 220px;
-  }
-
-  button {
-    padding: 6px 12px;
-    cursor: pointer;
-  }
-
-  canvas {
-    background: white;
-    border-radius: 6px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-  }
-
-  .mode-toggle {
-    margin-bottom: 10px;
-  }
-</style>
+  <!-- Our JS -->
+  <script src="js/app.js" defer></script>
 </head>
 <body>
 
@@ -54,7 +23,7 @@
     <input type="radio" name="mode" value="countries" checked>
     Compare Countries
   </label>
-  &nbsp;&nbsp;
+
   <label>
     <input type="radio" name="mode" value="variables">
     Compare Variables
@@ -70,10 +39,6 @@
       <option value="usa_Data.csv">United States</option>
       <option value="mex_Data.csv">Mexico</option>
       <option value="ind_Data.csv">India</option>
-      <option value="zaf_Data.csv">South Africa</option>
-      <option value="pol_Data.csv">Poland</option>
-      <option value="tur_Data.csv">Turkey</option>
-      <option value="idn_Data.csv">Indonesia</option>
     </select>
   </div>
 
@@ -87,207 +52,14 @@
     </select>
   </div>
 
-  <div>
-    <button id="downloadPNG">Download PNG</button><br><br>
+  <div class="buttons">
+    <button id="downloadPNG">Download PNG</button>
     <button id="exportCSV">Export CSV</button>
   </div>
 
 </div>
 
 <canvas id="myChart" height="120"></canvas>
-
-<script>
-document.addEventListener("DOMContentLoaded", () => {
-
-  const countrySelect = document.getElementById("countrySelect");
-  const variableSelect = document.getElementById("variableSelect");
-  const ctx = document.getElementById("myChart");
-  const downloadPNG = document.getElementById("downloadPNG");
-  const exportCSV = document.getElementById("exportCSV");
-  const modeRadios = document.querySelectorAll("input[name='mode']");
-
-  let chart = null;
-  let lastRenderedData = null;
-  const cache = {};
-
-  const colors = [
-    "#1f77b4", "#d62728", "#2ca02c", "#ff7f0e",
-    "#9467bd", "#8c564b", "#e377c2", "#17becf"
-  ];
-
-  const variableConfig = {
-    "ii Rate": [{ key: "ii Rate", label: "Interest Rate" }],
-    "CPI Level": [{ key: "CPI Level", label: "CPI Level" }],
-    "CPI Change": [
-      { key: "CPI QoQ", label: "CPI QoQ" },
-      { key: "CPI YoY", label: "CPI YoY" }
-    ],
-    "GDP Change": [
-      { key: "GDP QoQ", label: "GDP QoQ" },
-      { key: "GDP YoY", label: "GDP YoY" }
-    ]
-  };
-
-  function getMode() {
-    return document.querySelector("input[name='mode']:checked").value;
-  }
-
-  function getSelected(select) {
-    return Array.from(select.selectedOptions).map(o => o.value);
-  }
-
-  async function fetchAndParse(file) {
-    if (cache[file]) return cache[file];
-
-    const res = await fetch("data/" + file);
-    const csv = await res.text();
-
-    const lines = csv.trim().split("\n");
-    const header = lines[0].split(",");
-    const rows = lines.slice(1);
-
-    const dates = [];
-    const series = {};
-
-    for (let i = 3; i < header.length; i++) {
-      series[header[i]] = [];
-    }
-
-    rows.forEach(row => {
-      const cols = row.split(",");
-      if (cols.length !== header.length) return;
-
-      dates.push(`${cols[1]}-${String(cols[2]).padStart(2,"0")}`);
-
-      for (let i = 3; i < cols.length; i++) {
-        const val = parseFloat(cols[i]);
-        series[header[i]].push(isNaN(val) ? "" : val);
-      }
-    });
-
-    cache[file] = { dates, series };
-    return cache[file];
-  }
-
-  async function updateChart() {
-
-    const mode = getMode();
-    const selectedCountries = getSelected(countrySelect);
-    const selectedVariables = getSelected(variableSelect);
-
-    if (!selectedCountries.length || !selectedVariables.length) return;
-
-    let datasets = [];
-    let baseDates = null;
-    let colorIndex = 0;
-
-    if (mode === "countries") {
-      // One variable, many countries
-      const variable = selectedVariables[0];
-
-      for (const file of selectedCountries) {
-        const data = await fetchAndParse(file);
-        const countryName = file.replace("_Data.csv","");
-
-        if (!baseDates) baseDates = data.dates;
-
-        const config = variableConfig[variable];
-        if (!config) continue;
-
-        for (const item of config) {
-          datasets.push({
-            label: `${countryName} - ${item.label}`,
-            data: data.series[item.key],
-            borderColor: colors[colorIndex % colors.length],
-            tension: 0.2,
-            spanGaps: true
-          });
-          colorIndex++;
-        }
-      }
-
-    } else {
-      // One country, many variables
-      const file = selectedCountries[0];
-      const data = await fetchAndParse(file);
-      baseDates = data.dates;
-
-      for (const variable of selectedVariables) {
-        const config = variableConfig[variable];
-        if (!config) continue;
-
-        for (const item of config) {
-          datasets.push({
-            label: `${file.replace("_Data.csv","")} - ${item.label}`,
-            data: data.series[item.key],
-            borderColor: colors[colorIndex % colors.length],
-            tension: 0.2,
-            spanGaps: true
-          });
-          colorIndex++;
-        }
-      }
-    }
-
-    if (chart) chart.destroy();
-
-    chart = new Chart(ctx, {
-      type: "line",
-      data: { labels: baseDates, datasets },
-      options: {
-        responsive: true,
-        interaction: { mode: "index", intersect: false },
-        plugins: { legend: { position: "top" } },
-        scales: {
-          x: { ticks: { maxTicksLimit: 12 } },
-          y: { title: { display: true, text: "Value" } }
-        }
-      }
-    });
-
-    lastRenderedData = { dates: baseDates, datasets };
-  }
-
-  // PNG download
-  downloadPNG.addEventListener("click", () => {
-    if (!chart) return;
-    const link = document.createElement("a");
-    link.download = "economic_chart.png";
-    link.href = chart.toBase64Image();
-    link.click();
-  });
-
-  // CSV export
-  exportCSV.addEventListener("click", () => {
-    if (!lastRenderedData) return;
-
-    const { dates, datasets } = lastRenderedData;
-
-    let csv = "Date," + datasets.map(d => d.label).join(",") + "\n";
-
-    for (let i = 0; i < dates.length; i++) {
-      let row = [dates[i]];
-      for (const ds of datasets) {
-        row.push(ds.data[i] ?? "");
-      }
-      csv += row.join(",") + "\n";
-    }
-
-    const blob = new Blob([csv], { type: "text/csv" });
-    const link = document.createElement("a");
-    link.href = URL.createObjectURL(blob);
-    link.download = "exported_data.csv";
-    link.click();
-  });
-
-  countrySelect.addEventListener("change", updateChart);
-  variableSelect.addEventListener("change", updateChart);
-  modeRadios.forEach(r => r.addEventListener("change", updateChart));
-
-  updateChart();
-
-});
-</script>
 
 </body>
 </html>
