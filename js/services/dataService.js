@@ -3,7 +3,7 @@ const cache = {};
 export async function fetchData(file) {
   if (cache[file]) return cache[file];
 
-  const res = await fetch(`data/${file}`);
+  const res = await fetch(file);
   const csv = await res.text();
 
   const lines = csv.trim().split("\n");
