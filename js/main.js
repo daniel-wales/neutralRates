@@ -37,6 +37,31 @@ document.addEventListener("DOMContentLoaded", () => {
     return Array.from(select.selectedOptions).map(o => o.value);
   }
 
+  function getClampedBounds(values) {
+    const numericValues = values.filter(v => Number.isFinite(v));
+    if (!numericValues.length) return {};
+
+    const minData = Math.min(...numericValues);
+    const maxData = Math.max(...numericValues);
+
+    return {
+      min: minData < -50 ? -50 : minData,
+      max: maxData > 50 ? 50 : maxData
+    };
+  }
+
+  function getAxisLimitsForPercentChart(isPercentChart, labels, datasets) {
+    if (!isPercentChart) return {};
+
+    const yValues = datasets.flatMap(ds => ds.data);
+    const y = getClampedBounds(yValues);
+
+    const numericLabels = labels.map(label => Number(label));
+    const x = getClampedBounds(numericLabels);
+
+    return { y, x };
+  }
+
   // ---------------------
   // 🔹 Update Economic Data Chart
   // ---------------------
@@ -112,7 +137,10 @@ document.addEventListener("DOMContentLoaded", () => {
     const uniqueUnits = [...new Set(units)];
     let yAxisLabel = uniqueUnits.length === 1 ? variableConfig[selectedVariables[0]][0].yAxisLabel : "Value";
 
-    renderChart(ctx, datasets, labels, yAxisLabel);
+    const isPercentChart = uniqueUnits.length === 1 && uniqueUnits[0] === "percent";
+    const axisLimits = getAxisLimitsForPercentChart(isPercentChart, labels, datasets);
+
+    renderChart(ctx, datasets, labels, yAxisLabel, axisLimits);
     lastRenderedData = { labels, datasets, yAxisLabel };
   }
 
@@ -152,7 +180,11 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    renderChart(interestCtx, datasets, data.dates, variable);
+    const interestUnit = variableConfig[variable]?.[0]?.unit;
+    const isPercentChart = interestUnit === "percent";
+    const axisLimits = getAxisLimitsForPercentChart(isPercentChart, data.dates, datasets);
+
+    renderChart(interestCtx, datasets, data.dates, variable, axisLimits);
     lastInterestData = { labels: data.dates, datasets, yAxisLabel: variable };
   }
 

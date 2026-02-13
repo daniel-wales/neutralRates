@@ -8,7 +8,7 @@ if (window.ChartZoom) {
 const chartsByCanvas = new WeakMap();
 let activeChart = null;
 
-export function renderChart(ctx, datasets, labels, yAxisLabel = "") {
+export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits = {}) {
   const existingChart = chartsByCanvas.get(ctx);
   if (existingChart) existingChart.destroy();
 
@@ -47,6 +47,10 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "") {
         },
 
         zoom: {
+          limits: {
+            x: axisLimits.x ?? {},
+            y: axisLimits.y ?? {}
+          },
           pan: {
             enabled: true,
             mode: "x",
@@ -82,6 +86,8 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "") {
 
       scales: {
         x: {
+          min: axisLimits.x?.min,
+          max: axisLimits.x?.max,
           ticks: {
             color: "#000000",
             maxTicksLimit: 10
@@ -101,6 +107,8 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "") {
         },
 
         y: {
+          min: axisLimits.y?.min,
+          max: axisLimits.y?.max,
           ticks: {
             color: "#000000"
           },
