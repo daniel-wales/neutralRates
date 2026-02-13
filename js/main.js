@@ -18,7 +18,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // 🔹 Helpers
   // ---------------------
   function getMode() {
-    const modeInput = document.querySelector("input[name='mode']");
+    const modeInput = document.querySelector("input[name='mode']:checked");
     return modeInput ? modeInput.value : "countries"; // fallback
   }
 
@@ -40,9 +40,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let labels = [];
     let colorIndex = 0;
 
-    // Compare Countries mode
+    // 1️⃣ Compare Countries mode: multiple countries, single variable
     if (mode === "countries") {
-      const variable = selectedVariables[0];
+      const variable = selectedVariables[0]; // take first variable only
       for (const file of selectedCountries) {
         const data = await fetchData(file);
         if (!labels.length) labels = data.dates;
@@ -58,8 +58,10 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         });
       }
-    } else { // Compare Variables mode
-      const file = selectedCountries[0];
+    }
+    // 2️⃣ Compare Variables mode: single country, multiple variables
+    else if (mode === "variables") {
+      const file = selectedCountries[0]; // take first country only
       const data = await fetchData(file);
       labels = data.dates;
 
@@ -76,15 +78,37 @@ document.addEventListener("DOMContentLoaded", () => {
         });
       }
     }
+    // 3️⃣ Mixed countries and variables: multiple countries AND multiple variables
+    else if (mode === "mixed") {
+      for (const file of selectedCountries) {
+        const data = await fetchData(file);
+        if (!labels.length) labels = data.dates;
 
-    // Determine y-axis label
+        for (const variable of selectedVariables) {
+          const config = variableConfig[variable];
+          config.forEach(item => {
+            datasets.push({
+              label: `${file.replace("_Data.csv","")} - ${item.label}`,
+              data: data.series[item.key],
+              borderColor: getColors(colorIndex++),
+              tension: 0.2,
+              spanGaps: true
+            });
+          });
+        }
+      }
+    }
+
+    // ---------------------
+    // 🔹 Determine Y-axis label
+    // ---------------------
     const units = selectedVariables.map(v => variableConfig[v][0].unit);
     const uniqueUnits = [...new Set(units)];
     let yAxisLabel = "";
     if (uniqueUnits.length === 1) {
       yAxisLabel = variableConfig[selectedVariables[0]][0].yAxisLabel;
     } else {
-      yAxisLabel = "Value";
+      yAxisLabel = "Value"; // fallback when multiple units
     }
 
     renderChart(ctx, datasets, labels, yAxisLabel);
@@ -96,8 +120,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------------------
   countrySelect.addEventListener("change", updateChart);
   variableSelect.addEventListener("change", updateChart);
-  document.querySelectorAll("input[name='mode']")
-          .forEach(r => r.addEventListener("change", updateChart));
+  document.querySelectorAll("input[name='mode']").forEach(r => r.addEventListener("change", updateChart));
 
   downloadPNGBtn.addEventListener("click", () => {
     downloadPNG(getChartInstance());
@@ -135,4 +158,5 @@ document.addEventListener("DOMContentLoaded", () => {
   // 🔹 Initial Render
   // ---------------------
   updateChart();
+
 });
