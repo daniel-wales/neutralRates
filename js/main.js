@@ -43,10 +43,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const minData = Math.min(...numericValues);
     const maxData = Math.max(...numericValues);
+    const clampedMin = minData < -50 ? -50 : minData;
+    const clampedMax = maxData > 50 ? 50 : maxData;
+
+    const roundedMin = Math.floor(clampedMin * 10) / 10;
+    const roundedMax = Math.ceil(clampedMax * 10) / 10;
 
     return {
-      min: minData < -50 ? -50 : minData,
-      max: maxData > 50 ? 50 : maxData
+      min: roundedMin,
+      max: roundedMax
     };
   }
 
