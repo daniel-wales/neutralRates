@@ -3,122 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Neutral Rates: Data Viewer</title>
+  <title>Neutral Rates Dashboard</title>
 
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js" defer></script>
+  <!-- Chart Zoom -->
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-zoom@2.0.1/dist/chartjs-plugin-zoom.min.js" defer></script>
 
-  <!-- Our CSS -->
+  <!-- CSS -->
   <link rel="stylesheet" href="css/styles.css">
 
-  <!-- Our main JS module -->
+  <!-- Main JS -->
   <script type="module" src="js/main.js" defer></script>
 </head>
 <body>
 
-<h2>Neutral Rates: Data Viewer</h2>
+<h2>Neutral Rates Dashboard</h2>
 
-<div class="mode-toggle">
-  <label>
-    <input type="radio" name="mode" value="countries" checked>
-    Compare Countries
-  </label>
-  <label>
-    <input type="radio" name="mode" value="variables">
-    Compare Variables
-  </label>
+<!-- 🔹 Tab buttons -->
+<div class="tabs">
+  <button data-tab="economic" class="tab-button active">Economic Data</button>
+  <button data-tab="parameters" class="tab-button">Country Parameters</button>
+  <button data-tab="interest" class="tab-button">Interest Rates</button>
 </div>
 
-<div class="controls">
+<!-- 🔹 Tab contents -->
 
-<div>
-  <label>Countries:</label><br>
-  <select id="countrySelect" multiple size="10">
-    <!-- AFR: Africa Department -->
-    <optgroup label="Africa">
-      <option value="egy_Data.csv">Egypt</option>
-      <option value="nga_Data.csv">Nigeria</option>
-      <option value="zaf_Data.csv">South Africa</option>
-    </optgroup>
-    
-    <!-- APD: Asia and Pacific Department -->
-    <optgroup label="Asia and Pacific">
-      <option value="bgd_Data.csv">Bangladesh</option>
-      <option value="idn_Data.csv">Indonesia</option>
-      <option value="ind_Data.csv">India</option>
-      <option value="jpn_Data.csv">Japan</option>
-      <option value="kor_Data.csv">South Korea</option>
-      <option value="mys_Data.csv">Malaysia</option>
-      <option value="phl_Data.csv">Philippines</option>
-      <option value="tha_Data.csv">Thailand</option>
-      <option value="vnm_Data.csv">Vietnam</option>
-      <option value="aus_Data.csv">Australia</option>
-      <option value="nzl_Data.csv">New Zealand</option>
-    </optgroup>
-    
-    <!-- EUR: Europe Department -->
-    <optgroup label="Europe">
-      <option value="blr_Data.csv">Belarus</option>
-      <option value="cze_Data.csv">Czech Republic</option>
-      <option value="gbr_Data.csv">United Kingdom</option>
-      <option value="hun_Data.csv">Hungary</option>
-      <option value="nor_Data.csv">Norway</option>
-      <option value="pol_Data.csv">Poland</option>
-      <option value="rou_Data.csv">Romania</option>
-      <option value="rus_Data.csv">Russia</option>
-      <option value="srb_Data.csv">Serbia</option>
-      <option value="swe_Data.csv">Sweden</option>
-    </optgroup>
-    
-    <!-- MCD: Middle East and Central Asia Department -->
-    <optgroup label="Middle East and Central Asia">
-      <option value="isr_Data.csv">Israel</option>
-      <option value="pak_Data.csv">Pakistan</option>
-      <option value="tur_Data.csv">Turkey</option>
-    </optgroup>
-    
-    <!-- WHD: Western Hemisphere Department -->
-    <optgroup label="Western Hemisphere">
-      <option value="bra_Data.csv">Brazil</option>
-      <option value="can_Data.csv">Canada</option>
-      <option value="chl_Data.csv">Chile</option>
-      <option value="col_Data.csv">Colombia</option>
-      <option value="cri_Data.csv">Costa Rica</option>
-      <option value="dom_Data.csv">Dominican Republic</option>
-      <option value="gtm_Data.csv">Guatemala</option>
-      <option value="mex_Data.csv">Mexico</option>
-      <option value="per_Data.csv">Peru</option>
-      <option value="pry_Data.csv">Paraguay</option>
-      <option value="ury_Data.csv">Uruguay</option>
-      <option value="usa_Data.csv" selected>United States</option>
-    </optgroup>
-  </select>
-</div>
+<!-- 1️⃣ Economic Data Tab -->
+<div id="tab-economic" class="tab-content">
+  <div class="controls">
+    <label>Countries:</label><br>
+    <select id="countrySelect" multiple size="3"></select>
 
-  <div>
     <label>Variables:</label><br>
-    <select id="variableSelect" multiple size="3">
-      <option value="ii Rate" selected>Nominal Interest Rate</option>
-      <option value="CPI QoQ Ann">Inflation (QoQ Ann)</option>
-      <option value="CPI YoY">Inflation (YoY)</option>
-      <option value="CPI Level">Price Level</option>
-      <option value="GDP QoQ Ann">GDP Growth (QoQ Ann)</option>
-      <option value="GDP YoY">GDP Growth (YoY)</option>
-      <option value="Real GDP Level">Real GDP Level</option>
-    </select>
-  </div>
-   
-  <div class="buttons">
-    <button id="downloadPNG">Download PNG</button>
-    <button id="exportCSV">Export CSV</button>
-    <button id="resetZoom">Reset Zoom</button>
+    <select id="variableSelect" multiple size="3"></select>
+
+    <div class="buttons">
+      <button id="downloadPNG">Download PNG</button>
+      <button id="exportCSV">Export CSV</button>
+      <button id="resetZoom">Reset Zoom</button>
+    </div>
   </div>
 
+  <canvas id="myChart" height="300"></canvas>
 </div>
 
-<div class="chart-container">
-  <canvas id="myChart"></canvas>
+<!-- 2️⃣ Country Parameters Tab -->
+<div id="tab-parameters" class="tab-content" style="display:none;">
+  <table id="parametersTable" border="1">
+    <thead>
+      <tr>
+        <th>Country</th>
+        <th>Parameter A</th>
+        <th>Parameter B</th>
+        <th>Parameter C</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Rows filled by JS -->
+    </tbody>
+  </table>
+</div>
+
+<!-- 3️⃣ Interest Rates Tab -->
+<div id="tab-interest" class="tab-content" style="display:none;">
+  <canvas id="interestChart" height="300"></canvas>
 </div>
 
 </body>
