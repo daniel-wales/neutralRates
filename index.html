@@ -32,47 +32,72 @@
 
 <div class="controls">
 
-  <div>
+  Perfect! I’ve taken your full country list and organized it by continent, using <optgroup> for subheadings. Each continent’s countries are sorted alphabetically, and Brazil remains selected.
+
+<div>
   <label>Countries:</label><br>
-  <select id="countrySelect" multiple size="3">
-    <option value="aus_Data.csv">Australia</option>
-    <option value="bgd_Data.csv">Bangladesh</option>
-    <option value="bra_Data.csv" selected>Brazil</option>
-    <option value="blr_Data.csv">Belarus</option>
-    <option value="can_Data.csv">Canada</option>
-    <option value="chl_Data.csv">Chile</option>
-    <option value="col_Data.csv">Colombia</option>
-    <option value="cze_Data.csv">Czech Republic</option>
-    <option value="cri_Data.csv">Costa Rica</option>
-    <option value="dom_Data.csv">Dominican Republic</option>
-    <option value="gbr_Data.csv">United Kingdom</option>
-    <option value="gtm_Data.csv">Guatemala</option>
-    <option value="hun_Data.csv">Hungary</option>
-    <option value="idn_Data.csv">Indonesia</option>
-    <option value="ind_Data.csv">India</option>
-    <option value="isr_Data.csv">Israel</option>
-    <option value="jpn_Data.csv">Japan</option>
-    <option value="kor_Data.csv">South Korea</option>
-    <option value="mex_Data.csv">Mexico</option>
-    <option value="mys_Data.csv">Malaysia</option>
-    <option value="nga_Data.csv">Nigeria</option>
-    <option value="nor_Data.csv">Norway</option>
-    <option value="pak_Data.csv">Pakistan</option>
-    <option value="per_Data.csv">Peru</option>
-    <option value="phl_Data.csv">Philippines</option>
-    <option value="pol_Data.csv">Poland</option>
-    <option value="pry_Data.csv">Paraguay</option>
-    <option value="rou_Data.csv">Romania</option>
-    <option value="rus_Data.csv">Russia</option>
-    <option value="srb_Data.csv">Serbia</option>
-    <option value="swe_Data.csv">Sweden</option>
-    <option value="tha_Data.csv">Thailand</option>
-    <option value="tur_Data.csv">Turkey</option>
-    <option value="ury_Data.csv">Uruguay</option>
-    <option value="usa_Data.csv">United States</option>
-    <option value="vnm_Data.csv">Vietnam</option>
-    <option value="zaf_Data.csv">South Africa</option>
-    <option value="nzl_Data.csv">New Zealand</option>
+  <select id="countrySelect" multiple size="10">
+    <!-- Africa -->
+    <optgroup label="Africa">
+      <option value="nga_Data.csv">Nigeria</option>
+      <option value="zaf_Data.csv">South Africa</option>
+    </optgroup>
+
+    <!-- Asia -->
+    <optgroup label="Asia">
+      <option value="bgd_Data.csv">Bangladesh</option>
+      <option value="idn_Data.csv">Indonesia</option>
+      <option value="ind_Data.csv">India</option>
+      <option value="isr_Data.csv">Israel</option>
+      <option value="jpn_Data.csv">Japan</option>
+      <option value="kor_Data.csv">South Korea</option>
+      <option value="mys_Data.csv">Malaysia</option>
+      <option value="pak_Data.csv">Pakistan</option>
+      <option value="phl_Data.csv">Philippines</option>
+      <option value="tha_Data.csv">Thailand</option>
+      <option value="tur_Data.csv">Turkey</option>
+      <option value="vnm_Data.csv">Vietnam</option>
+    </optgroup>
+
+    <!-- Europe -->
+    <optgroup label="Europe">
+      <option value="blr_Data.csv">Belarus</option>
+      <option value="cze_Data.csv">Czech Republic</option>
+      <option value="gbr_Data.csv">United Kingdom</option>
+      <option value="hun_Data.csv">Hungary</option>
+      <option value="nor_Data.csv">Norway</option>
+      <option value="pol_Data.csv">Poland</option>
+      <option value="rou_Data.csv">Romania</option>
+      <option value="rus_Data.csv">Russia</option>
+      <option value="srb_Data.csv">Serbia</option>
+      <option value="swe_Data.csv">Sweden</option>
+    </optgroup>
+
+    <!-- North America -->
+    <optgroup label="North America">
+      <option value="can_Data.csv">Canada</option>
+      <option value="cri_Data.csv">Costa Rica</option>
+      <option value="dom_Data.csv">Dominican Republic</option>
+      <option value="gtm_Data.csv">Guatemala</option>
+      <option value="mex_Data.csv">Mexico</option>
+      <option value="usa_Data.csv">United States</option>
+    </optgroup>
+
+    <!-- South America -->
+    <optgroup label="South America">
+      <option value="bra_Data.csv" selected>Brazil</option>
+      <option value="chl_Data.csv">Chile</option>
+      <option value="col_Data.csv">Colombia</option>
+      <option value="per_Data.csv">Peru</option>
+      <option value="pry_Data.csv">Paraguay</option>
+      <option value="ury_Data.csv">Uruguay</option>
+    </optgroup>
+
+    <!-- Oceania -->
+    <optgroup label="Oceania">
+      <option value="aus_Data.csv">Australia</option>
+      <option value="nzl_Data.csv">New Zealand</option>
+    </optgroup>
   </select>
 </div>
 
