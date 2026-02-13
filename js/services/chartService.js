@@ -178,49 +178,110 @@ export function getChartInstance(ctx = null) {
 }
 
 
-export function renderParameterChart(ctx, rows) {
+function getParameterSplitIndex(rows) {
+  return rows.findIndex(row => row.parameter.includes("_int"));
+}
+
+function formatParameterTick(value) {
+  if (typeof value !== "string") return value;
+
+  let tick = value.trim();
+  if (tick.startsWith("$") && tick.endsWith("$")) tick = tick.slice(1, -1);
+
+  return tick
+    .replace(/_int/g, "_{int}")
+    .replace(/\\hat\{y\}/g, "ŷ")
+    .replace(/\\sigma/g, "σ")
+    .replace(/\\theta/g, "θ")
+    .replace(/\\alpha/g, "α")
+    .replace(/\\beta/g, "β")
+    .replace(/\\{\\{/g, "{")
+    .replace(/\\}\\}/g, "}");
+}
+
+const parameterDividerPlugin = {
+  id: "parameterDivider",
+  afterDatasetsDraw(chart) {
+    const splitIndex = chart?.options?.plugins?.parameterDivider?.splitIndex;
+    if (!Number.isInteger(splitIndex) || splitIndex <= 0) return;
+
+    const xScale = chart.scales?.x;
+    const yScale = chart.scales?.y;
+    if (!xScale || !yScale || splitIndex >= chart.data.labels.length) return;
+
+    const left = xScale.getPixelForTick(splitIndex - 1);
+    const right = xScale.getPixelForTick(splitIndex);
+    if (!Number.isFinite(left) || !Number.isFinite(right)) return;
+
+    const x = (left + right) / 2;
+    const { ctx } = chart;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.setLineDash([6, 4]);
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "#4b4b4b";
+    ctx.moveTo(x, yScale.top);
+    ctx.lineTo(x, yScale.bottom);
+    ctx.stroke();
+    ctx.restore();
+  }
+};
+
+export function renderParameterChart(ctx, rows, selectedSeries = ["prior", "posterior", "range"]) {
   const existingChart = chartsByCanvas.get(ctx);
   if (existingChart) existingChart.destroy();
 
   const labels = rows.map(row => row.parameter);
+  const selected = new Set(selectedSeries);
+  const datasets = [];
+
+  if (selected.has("range")) {
+    datasets.push({
+      type: "bar",
+      label: "Range (Lower to Upper)",
+      data: rows.map(row => [row.lower, row.upper]),
+      backgroundColor: "rgba(31, 119, 180, 0.25)",
+      borderWidth: 0,
+      borderSkipped: false,
+      barPercentage: 0.72,
+      categoryPercentage: 0.9
+    });
+  }
+
+  if (selected.has("prior")) {
+    datasets.push({
+      type: "line",
+      label: "Prior (Mean)",
+      data: rows.map(row => row.prior),
+      borderColor: "#e67e22",
+      backgroundColor: "#e67e22",
+      showLine: false,
+      pointStyle: "circle",
+      pointRadius: 4,
+      pointHoverRadius: 5
+    });
+  }
+
+  if (selected.has("posterior")) {
+    datasets.push({
+      type: "line",
+      label: "Posterior (Median)",
+      data: rows.map(row => row.posterior),
+      borderColor: "#2f7a3e",
+      backgroundColor: "#2f7a3e",
+      showLine: false,
+      pointStyle: "circle",
+      pointRadius: 4,
+      pointHoverRadius: 5
+    });
+  }
 
   const chart = new Chart(ctx, {
     type: "bar",
     data: {
       labels,
-      datasets: [
-        {
-          type: "bar",
-          label: "Range (Lower to Upper)",
-          data: rows.map(row => [row.lower, row.upper]),
-          backgroundColor: "rgba(31, 119, 180, 0.25)",
-          borderColor: "rgba(31, 119, 180, 0.8)",
-          borderWidth: 1,
-          borderSkipped: false,
-          barPercentage: 0.72,
-          categoryPercentage: 0.9
-        },
-        {
-          type: "line",
-          label: "Prior (Mean)",
-          data: rows.map(row => row.prior),
-          borderColor: "#e67e22",
-          backgroundColor: "#e67e22",
-          showLine: false,
-          pointRadius: 4,
-          pointHoverRadius: 5
-        },
-        {
-          type: "line",
-          label: "Posterior (Mean_1)",
-          data: rows.map(row => row.posterior),
-          borderColor: "#2f7a3e",
-          backgroundColor: "#2f7a3e",
-          showLine: false,
-          pointRadius: 4,
-          pointHoverRadius: 5
-        }
-      ]
+      datasets
     },
     options: {
       responsive: true,
@@ -230,25 +291,14 @@ export function renderParameterChart(ctx, rows) {
           bottom: 44
         }
       },
-      plugins: {
-        legend: {
-          position: "top"
-        },
-        tooltip: {
-          backgroundColor: "#ffffff",
-          titleColor: "#000000",
-          bodyColor: "#000000",
-          borderColor: "#000000",
-          borderWidth: 1
-        }
-      },
       scales: {
         x: {
           ticks: {
             color: "#000000",
             maxRotation: 70,
             minRotation: 45,
-            autoSkip: false
+            autoSkip: false,
+            callback: (_, index) => formatParameterTick(labels[index])
           },
           title: {
             display: true,
@@ -278,9 +328,38 @@ export function renderParameterChart(ctx, rows) {
             color: "#000000"
           }
         }
+      },
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+            usePointStyle: true,
+            generateLabels: chart => {
+              const defaultLabels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+              return defaultLabels.map(item => {
+                const dataset = chart.data.datasets[item.datasetIndex];
+                return {
+                  ...item,
+                  pointStyle: dataset?.type === "line" ? "circle" : "rect",
+                  lineWidth: 0
+                };
+              });
+            }
+          }
+        },
+        tooltip: {
+          backgroundColor: "#ffffff",
+          titleColor: "#000000",
+          bodyColor: "#000000",
+          borderColor: "#000000",
+          borderWidth: 1
+        },
+        parameterDivider: {
+          splitIndex: getParameterSplitIndex(rows)
+        }
       }
     },
-    plugins: [sourceLabelPlugin]
+    plugins: [sourceLabelPlugin, parameterDividerPlugin]
   });
 
   chartsByCanvas.set(ctx, chart);
