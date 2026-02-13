@@ -7,14 +7,13 @@ export async function fetchData(file) {
  const csv = await res.text();
 
  const lines = csv.trim().split("\n");
- const header = lines[0].split(",");
+ const header = lines[0].split(",").map(col => col.trim());
  const rows = lines.slice(1);
 
  const dates = [];
  const series = {};
 
-
-  const normalizedHeader = header.map(col => col.trim().toLowerCase());
+  const normalizedHeader = header.map(col => col.toLowerCase());
   const yearIndex = normalizedHeader.indexOf("year");
   const monthIndex = normalizedHeader.indexOf("month");
 
@@ -30,7 +29,7 @@ export async function fetchData(file) {
   });
 
  rows.forEach(row => {
-   const cols = row.split(",");
+   const cols = row.split(",").map(col => col.trim());
    if (cols.length !== header.length) return;
 
     const formattedDate = `${cols[safeYearIndex]}-${String(cols[safeMonthIndex]).padStart(2,"0")}`;
