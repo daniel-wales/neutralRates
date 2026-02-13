@@ -1,35 +1,48 @@
 const cache = {};
 
 export async function fetchData(file) {
-  if (cache[file]) return cache[file];
+ if (cache[file]) return cache[file];
 
-  const res = await fetch(file);
-  const csv = await res.text();
+ const res = await fetch(file);
+ const csv = await res.text();
 
-  const lines = csv.trim().split("\n");
-  const header = lines[0].split(",");
-  const rows = lines.slice(1);
+ const lines = csv.trim().split("\n");
+ const header = lines[0].split(",");
+ const rows = lines.slice(1);
 
-  const dates = [];
-  const series = {};
+ const dates = [];
+ const series = {};
 
-  for (let i = 3; i < header.length; i++) {
-    series[header[i]] = [];
-  }
 
-  rows.forEach(row => {
-    const cols = row.split(",");
-    if (cols.length !== header.length) return;
+  const normalizedHeader = header.map(col => col.trim().toLowerCase());
+  const yearIndex = normalizedHeader.indexOf("year");
+  const monthIndex = normalizedHeader.indexOf("month");
 
-    const formattedDate = `${cols[1]}-${String(cols[2]).padStart(2,"0")}`;
-    dates.push(formattedDate);
+  const safeYearIndex = yearIndex >= 0 ? yearIndex : 1;
+  const safeMonthIndex = monthIndex >= 0 ? monthIndex : 2;
+  const skippedColumns = new Set([safeYearIndex, safeMonthIndex]);
 
-    for (let i = 3; i < cols.length; i++) {
-      const val = parseFloat(cols[i]);
-      series[header[i]].push(isNaN(val) ? null : val);
-    }
+  const valueColumnIndices = [];
+  header.forEach((columnName, index) => {
+    if (skippedColumns.has(index)) return;
+    valueColumnIndices.push(index);
+    series[columnName] = [];
   });
 
-  cache[file] = { dates, series };
-  return cache[file];
+ rows.forEach(row => {
+   const cols = row.split(",");
+   if (cols.length !== header.length) return;
+
+    const formattedDate = `${cols[safeYearIndex]}-${String(cols[safeMonthIndex]).padStart(2,"0")}`;
+   dates.push(formattedDate);
+
+
+    valueColumnIndices.forEach(index => {
+      const val = parseFloat(cols[index]);
+      series[header[index]].push(isNaN(val) ? null : val);
+    });
+ });
+
+ cache[file] = { dates, series };
+ return cache[file];
 }
