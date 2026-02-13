@@ -145,6 +145,77 @@
 
 <!-- 3️⃣ Interest Rates Tab -->
 <div id="tab-interest" class="tab-content" style="display:none;">
+  
+   <div class="controls">
+    <label>Country:</label><br>
+    <select id="interestCountrySelect">
+      <!-- Copy the same country options as Economic Data -->
+      <optgroup label="Africa">
+        <option value="egy_IR.csv">Egypt</option>
+        <option value="nga_IR.csv">Nigeria</option>
+        <option value="zaf_IR.csv">South Africa</option>
+      </optgroup>
+      <optgroup label="Asia and Pacific">
+        <option value="bgd_IR.csv">Bangladesh</option>
+        <option value="idn_IR.csv">Indonesia</option>
+        <option value="ind_IR.csv" selected>India</option>
+        <option value="jpn_IR.csv">Japan</option>
+        <option value="kor_IR.csv">South Korea</option>
+        <option value="mys_IR.csv">Malaysia</option>
+        <option value="phl_IR.csv">Philippines</option>
+        <option value="tha_IR.csv">Thailand</option>
+        <option value="vnm_IR.csv">Vietnam</option>
+        <option value="aus_IR.csv">Australia</option>
+        <option value="nzl_IR.csv">New Zealand</option>
+      </optgroup>
+      <optgroup label="Europe">
+        <option value="blr_IR.csv">Belarus</option>
+        <option value="cze_IR.csv">Czech Republic</option>
+        <option value="gbr_IR.csv">United Kingdom</option>
+        <option value="hun_IR.csv">Hungary</option>
+        <option value="nor_IR.csv">Norway</option>
+        <option value="pol_IR.csv">Poland</option>
+        <option value="rou_IR.csv">Romania</option>
+        <option value="rus_IR.csv">Russia</option>
+        <option value="srb_IR.csv">Serbia</option>
+        <option value="swe_IR.csv">Sweden</option>
+      </optgroup>
+      <optgroup label="Middle East and Central Asia">
+        <option value="isr_IR.csv">Israel</option>
+        <option value="pak_IR.csv">Pakistan</option>
+        <option value="tur_IR.csv">Turkey</option>
+      </optgroup>
+      <optgroup label="Western Hemisphere">
+        <option value="bra_IR.csv">Brazil</option>
+        <option value="can_IR.csv">Canada</option>
+        <option value="chl_IR.csv">Chile</option>
+        <option value="col_IR.csv">Colombia</option>
+        <option value="cri_IR.csv">Costa Rica</option>
+        <option value="dom_IR.csv">Dominican Republic</option>
+        <option value="gtm_IR.csv">Guatemala</option>
+        <option value="mex_IR.csv">Mexico</option>
+        <option value="per_IR.csv">Peru</option>
+        <option value="pry_IR.csv">Paraguay</option>
+        <option value="ury_IR.csv">Uruguay</option>
+        <option value="usa_IR.csv" selected>United States</option>
+      </optgroup>
+    </select>
+
+    <label>Variable:</label><br>
+    <select id="interestVariableSelect">
+      <!-- Define your new variables and labels -->
+      <option value="shortRate" selected>Short-Term Rate</option>
+      <option value="longRate">Long-Term Rate</option>
+      <option value="neutralRate">Neutral Rate</option>
+    </select>
+
+    <div class="buttons">
+      <button id="downloadInterestPNG">Download PNG</button>
+      <button id="exportInterestCSV">Export CSV</button>
+      <button id="resetInterestZoom">Reset Zoom</button>
+    </div>
+  </div>
+  
   <div class="chart-container">
     <canvas id="interestChart" height="300"></canvas>
   </div>
