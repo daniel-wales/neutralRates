@@ -149,7 +149,6 @@
    <div class="controls">
     <label>Country:</label><br>
     <select id="interestCountrySelect">
-      <!-- Copy the same country options as Economic Data -->
       <optgroup label="Africa">
         <option value="egy_IR.csv">Egypt</option>
         <option value="nga_IR.csv">Nigeria</option>
@@ -197,14 +196,14 @@
         <option value="per_IR.csv">Peru</option>
         <option value="pry_IR.csv">Paraguay</option>
         <option value="ury_IR.csv">Uruguay</option>
-        <option value="usa_IR.csv" selected>United States</option>
+        <option value="usa_Data.csv" selected>United States</option>
       </optgroup>
     </select>
 
     <label>Variable:</label><br>
     <select id="interestVariableSelect">
-      <!-- Define your new variables and labels -->
-      <option value="shortRate" selected>Short-Term Rate</option>
+      <option value="longRate">Long-Term Rate</option>
+      <option value="ii Rate" selected>Nominal Interest Rate</option>
       <option value="longRate">Long-Term Rate</option>
       <option value="neutralRate">Neutral Rate</option>
     </select>
