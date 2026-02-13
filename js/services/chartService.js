@@ -8,6 +8,25 @@ if (window.ChartZoom) {
 const chartsByCanvas = new WeakMap();
 let activeChart = null;
 
+const sourceLabelPlugin = {
+  id: "sourceLabel",
+  afterDraw(chart) {
+    const sourceText = "Source: Calderon Dhungana and Wales (2026)";
+    const {
+      ctx,
+      chartArea: { right, bottom }
+    } = chart;
+
+    ctx.save();
+    ctx.fillStyle = "#4a4a4a";
+    ctx.font = "11px Arial";
+    ctx.textAlign = "right";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(sourceText, right, bottom + 28);
+    ctx.restore();
+  }
+};
+
 export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits = {}) {
   const existingChart = chartsByCanvas.get(ctx);
   if (existingChart) existingChart.destroy();
@@ -18,6 +37,11 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits =
     options: {
       responsive: true,
       maintainAspectRatio: false,
+      layout: {
+        padding: {
+          bottom: 36
+        }
+      },
 
       interaction: {
         mode: "index",
@@ -126,7 +150,8 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits =
           }
         }
       }
-    }
+    },
+    plugins: [sourceLabelPlugin]
   });
 
   chartsByCanvas.set(ctx, chart);
