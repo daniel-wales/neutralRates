@@ -134,6 +134,7 @@ export const variableConfig = {
 };
 
 export const colors = [
-  "#1f77b4", "#d62728", "#2ca02c",
-  "#ff7f0e", "#9467bd", "#17becf"
+  "#1f5f99", "#2a7ab9", "#4c92c7",
+  "#5aa9d6", "#74b8de", "#8dc7e5",
+  "#2f4f75", "#3a6a96"
 ];

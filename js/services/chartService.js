@@ -1,5 +1,15 @@
 import { colors } from "../config/variables.js";
 
+const chartTheme = {
+  text: "#1f3347",
+  mutedText: "#49617a",
+  grid: "#d7e1eb",
+  border: "#7f97af",
+  divider: "#6f88a0",
+  tooltipBackground: "#f9fbff",
+  tooltipBorder: "#7f97af"
+};
+
 // Register zoom plugin from CDN (required for ES modules)
 if (window.ChartZoom) {
   Chart.register(window.ChartZoom);
@@ -24,7 +34,7 @@ const sourceLabelPlugin = {
     const sourceY = xScale ? xScale.bottom - font.lineHeight / 2 : bottom + 28;
 
     ctx.save();
-    ctx.fillStyle = xTitleOptions.color ?? xTickOptions.color ?? "#000000";
+    ctx.fillStyle = xTitleOptions.color ?? xTickOptions.color ?? chartTheme.mutedText;
     ctx.font = font.string;
     ctx.textAlign = "right";
     ctx.textBaseline = "middle";
@@ -58,7 +68,7 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits =
         legend: {
           position: "top",
           labels: {
-            color: "#000",
+            color: chartTheme.text,
             font: {
               size: 12,
               weight: "normal"
@@ -69,10 +79,10 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits =
         tooltip: {
           mode: "index",
           intersect: false,
-          backgroundColor: "#ffffff",
-          titleColor: "#000000",
-          bodyColor: "#000000",
-          borderColor: "#000000",
+          backgroundColor: chartTheme.tooltipBackground,
+          titleColor: chartTheme.text,
+          bodyColor: chartTheme.text,
+          borderColor: chartTheme.tooltipBorder,
           borderWidth: 1
         },
 
@@ -119,20 +129,20 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits =
           min: axisLimits.x?.min,
           max: axisLimits.x?.max,
           ticks: {
-            color: "#000000",
+            color: chartTheme.text,
             maxTicksLimit: 10
           },
           grid: {
-            color: "#e0e0e0",
+            color: chartTheme.grid,
             lineWidth: 1
           },
           border: {
-            color: "#000000"
+            color: chartTheme.border
           },
           title: {
             display: true,
             text: "Year-Month",
-            color: "#000000"
+            color: chartTheme.text
           }
         },
 
@@ -140,20 +150,20 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits =
           min: axisLimits.y?.min,
           max: axisLimits.y?.max,
           ticks: {
-            color: "#000000",
+            color: chartTheme.text,
             callback: (value) => Number(value).toLocaleString(undefined, { maximumFractionDigits: 1 })
           },
           grid: {
-            color: "#e0e0e0",
+            color: chartTheme.grid,
             lineWidth: 1
           },
           border: {
-            color: "#000000"
+            color: chartTheme.border
           },
           title: {
             display: true,
             text: yAxisLabel,
-            color: "#000000"
+            color: chartTheme.text
           }
         }
       }
@@ -215,10 +225,56 @@ const unicodeSubscripts = {
   "*": "*"
 };
 
+const unicodeSuperscripts = {
+  "0": "⁰",
+  "1": "¹",
+  "2": "²",
+  "3": "³",
+  "4": "⁴",
+  "5": "⁵",
+  "6": "⁶",
+  "7": "⁷",
+  "8": "⁸",
+  "9": "⁹",
+  "a": "ᵃ",
+  "b": "ᵇ",
+  "c": "ᶜ",
+  "d": "ᵈ",
+  "e": "ᵉ",
+  "f": "ᶠ",
+  "g": "ᵍ",
+  "h": "ʰ",
+  "i": "ⁱ",
+  "j": "ʲ",
+  "k": "ᵏ",
+  "l": "ˡ",
+  "m": "ᵐ",
+  "n": "ⁿ",
+  "o": "ᵒ",
+  "p": "ᵖ",
+  "r": "ʳ",
+  "s": "ˢ",
+  "t": "ᵗ",
+  "u": "ᵘ",
+  "v": "ᵛ",
+  "w": "ʷ",
+  "x": "ˣ",
+  "y": "ʸ",
+  "z": "ᶻ",
+  "*": "*"
+};
+
 function toUnicodeSubscript(token) {
   return token
     .split("")
     .map(char => unicodeSubscripts[char] ?? char)
+    .join("");
+}
+
+function toUnicodeSuperscript(token) {
+  return token
+    .split("")
+    .map(char => unicodeSuperscripts[char] ?? char)
     .join("");
 }
 
@@ -229,7 +285,7 @@ function formatParameterTick(value) {
   if (tick.startsWith("$") && tick.endsWith("$")) tick = tick.slice(1, -1);
 
   tick = tick
-    .replace(/_int/g, "^{int}")
+    .replace(/_int/g, "")
     .replace(/\\hat\{y\}/g, "ŷ")
     .replace(/\\sigma/g, "σ")
     .replace(/\\theta/g, "θ")
@@ -240,6 +296,8 @@ function formatParameterTick(value) {
 
   tick = tick.replace(/_\{([^}]+)\}/g, (_, token) => toUnicodeSubscript(token));
   tick = tick.replace(/_([A-Za-z0-9*]+)/g, (_, token) => toUnicodeSubscript(token));
+  tick = tick.replace(/\^\{([^}]+)\}/g, (_, token) => toUnicodeSuperscript(token));
+  tick = tick.replace(/\^([A-Za-z0-9*]+)/g, (_, token) => toUnicodeSuperscript(token));
 
   return tick;
 }
@@ -265,10 +323,41 @@ const parameterDividerPlugin = {
     ctx.beginPath();
     ctx.setLineDash([6, 4]);
     ctx.lineWidth = 1;
-    ctx.strokeStyle = "#4b4b4b";
+    ctx.strokeStyle = chartTheme.divider;
     ctx.moveTo(x, yScale.top);
     ctx.lineTo(x, yScale.bottom);
     ctx.stroke();
+    ctx.restore();
+  }
+};
+
+const parameterSectionLabelPlugin = {
+  id: "parameterSectionLabel",
+  afterDraw(chart) {
+    const splitIndex = chart?.options?.plugins?.parameterDivider?.splitIndex;
+    if (!Number.isInteger(splitIndex) || splitIndex <= 0 || splitIndex >= chart.data.labels.length) return;
+
+    const xScale = chart.scales?.x;
+    if (!xScale) return;
+
+    const leftStart = xScale.getPixelForTick(0);
+    const leftEnd = xScale.getPixelForTick(splitIndex - 1);
+    const rightStart = xScale.getPixelForTick(splitIndex);
+    const rightEnd = xScale.getPixelForTick(chart.data.labels.length - 1);
+    if (![leftStart, leftEnd, rightStart, rightEnd].every(Number.isFinite)) return;
+
+    const leftCenter = (leftStart + leftEnd) / 2;
+    const rightCenter = (rightStart + rightEnd) / 2;
+    const y = xScale.bottom + 20;
+
+    const { ctx } = chart;
+    ctx.save();
+    ctx.fillStyle = chartTheme.mutedText;
+    ctx.font = "600 12px 'Segoe UI', Roboto, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("Standard LW", leftCenter, y);
+    ctx.fillText("International Model", rightCenter, y);
     ctx.restore();
   }
 };
@@ -333,13 +422,13 @@ export function renderParameterChart(ctx, rows, selectedSeries = ["prior", "post
       maintainAspectRatio: false,
       layout: {
         padding: {
-          bottom: 44
+          bottom: 64
         }
       },
       scales: {
         x: {
           ticks: {
-            color: "#000000",
+            color: chartTheme.text,
             maxRotation: 70,
             minRotation: 45,
             autoSkip: false,
@@ -348,29 +437,29 @@ export function renderParameterChart(ctx, rows, selectedSeries = ["prior", "post
           title: {
             display: true,
             text: "Parameters",
-            color: "#000000"
+            color: chartTheme.text
           },
           grid: {
             display: false
           },
           border: {
-            color: "#000000"
+            color: chartTheme.border
           }
         },
         y: {
           ticks: {
-            color: "#000000"
+            color: chartTheme.text
           },
           title: {
             display: true,
             text: "Value",
-            color: "#000000"
+            color: chartTheme.text
           },
           grid: {
-            color: "#e0e0e0"
+            color: chartTheme.grid
           },
           border: {
-            color: "#000000"
+            color: chartTheme.border
           }
         }
       },
@@ -397,10 +486,10 @@ export function renderParameterChart(ctx, rows, selectedSeries = ["prior", "post
           }
         },
         tooltip: {
-          backgroundColor: "#ffffff",
-          titleColor: "#000000",
-          bodyColor: "#000000",
-          borderColor: "#000000",
+          backgroundColor: chartTheme.tooltipBackground,
+          titleColor: chartTheme.text,
+          bodyColor: chartTheme.text,
+          borderColor: chartTheme.tooltipBorder,
           borderWidth: 1
         },
         parameterDivider: {
@@ -408,7 +497,7 @@ export function renderParameterChart(ctx, rows, selectedSeries = ["prior", "post
         }
       }
     },
-    plugins: [sourceLabelPlugin, parameterDividerPlugin]
+    plugins: [sourceLabelPlugin, parameterDividerPlugin, parameterSectionLabelPlugin]
   });
 
   chartsByCanvas.set(ctx, chart);
