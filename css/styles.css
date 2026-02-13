@@ -74,7 +74,7 @@ h2 {
 }
 
 #tab-interest #interestVariableSelect {
-  min-height: 84px;
+  min-height: 140px;
 }
 
 #tab-economic #countrySelect {
@@ -99,6 +99,12 @@ h2 {
 .chart-container {
   margin: 0;
   max-width: 100%;
+}
+
+
+#tab-economic .main-panel .chart-container,
+#tab-interest .main-panel .chart-container {
+  max-width: 960px;
 }
 
 #tab-parameters .chart-container {

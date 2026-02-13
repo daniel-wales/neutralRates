@@ -153,44 +153,54 @@ document.addEventListener("DOMContentLoaded", () => {
   // 🔹 Update Interest Rates Chart
   // ---------------------
   async function updateInterestChart() {
-    const country = interestCountrySelect.value;
-    const variable = interestVariableSelect.value;
-    if (!country || !variable) return;
-
-    const data = await fetchData(`results/${country}`);
+    const selectedCountries = getSelected(interestCountrySelect);
+    const selectedVariables = getSelected(interestVariableSelect);
+    if (!selectedCountries.length || !selectedVariables.length) return;
 
     const datasets = [];
-    if (variable === "rstar_lw") {
-      datasets.push({
-        label: "rstar_lw",
-        data: data.series.rstar_lw,
-        borderColor: "#1f77b4",
-        tension: 0.2,
-        spanGaps: true
-      });
-      datasets.push({
-        label: "rrobs",
-        data: data.series.rrobs,
-        borderColor: "#d62728",
-        tension: 0.2,
-        spanGaps: true
-      });
-    } else {
-      datasets.push({
-        label: variable,
-        data: data.series[variable],
-        borderColor: "#1f77b4",
-        tension: 0.2,
-        spanGaps: true
-      });
+    let labels = [];
+    let colorIndex = 0;
+
+    for (const country of selectedCountries) {
+      const data = await fetchData(`results/${country}`);
+      if (!labels.length) labels = data.dates;
+
+      for (const variable of selectedVariables) {
+        if (variable === "rstar_lw") {
+          datasets.push({
+            label: `${country.replace("rstar_HLW_SV_", "").replace(".csv", "")} - rstar_lw`,
+            data: data.series.rstar_lw,
+            borderColor: getColors(colorIndex++),
+            tension: 0.2,
+            spanGaps: true
+          });
+          datasets.push({
+            label: `${country.replace("rstar_HLW_SV_", "").replace(".csv", "")} - rrobs`,
+            data: data.series.rrobs,
+            borderColor: getColors(colorIndex++),
+            tension: 0.2,
+            spanGaps: true
+          });
+        } else {
+          datasets.push({
+            label: `${country.replace("rstar_HLW_SV_", "").replace(".csv", "")} - ${variable}`,
+            data: data.series[variable],
+            borderColor: getColors(colorIndex++),
+            tension: 0.2,
+            spanGaps: true
+          });
+        }
+      }
     }
 
-    const interestUnit = variableConfig[variable]?.[0]?.unit;
-    const isPercentChart = interestUnit === "percent";
-    const axisLimits = getAxisLimitsForPercentChart(isPercentChart, data.dates, datasets);
+    const interestUnits = selectedVariables.map(v => variableConfig[v]?.[0]?.unit).filter(Boolean);
+    const uniqueUnits = [...new Set(interestUnits)];
+    const yAxisLabel = uniqueUnits.length === 1 ? variableConfig[selectedVariables[0]][0].yAxisLabel : "Value";
+    const isPercentChart = uniqueUnits.length === 1 && uniqueUnits[0] === "percent";
+    const axisLimits = getAxisLimitsForPercentChart(isPercentChart, labels, datasets);
 
-    renderChart(interestCtx, datasets, data.dates, variable, axisLimits);
-    lastInterestData = { labels: data.dates, datasets, yAxisLabel: variable };
+    renderChart(interestCtx, datasets, labels, yAxisLabel, axisLimits);
+    lastInterestData = { labels, datasets, yAxisLabel };
   }
 
   // ---------------------
