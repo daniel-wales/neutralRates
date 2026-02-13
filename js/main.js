@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const variable = interestVariableSelect.value;
     if (!country || !variable) return;
 
-    const data = await fetchData(`results/${file}`);
+    const data = await fetchData(`results/${country}`);
 
     const dataset = {
       label: variable,
