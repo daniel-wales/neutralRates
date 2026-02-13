@@ -11,18 +11,24 @@ let activeChart = null;
 const sourceLabelPlugin = {
   id: "sourceLabel",
   afterDraw(chart) {
-    const sourceText = "Source: Calderon Dhungana and Wales (2026)";
+    const sourceText = "Source: Calderon, Dhungana and Wales (2026)";
     const {
       ctx,
       chartArea: { right, bottom }
     } = chart;
+    const xScale = chart.scales?.x;
+    const xTitleOptions = chart.options?.scales?.x?.title ?? {};
+    const xTickOptions = chart.options?.scales?.x?.ticks ?? {};
+    const font = Chart.helpers.toFont(xTitleOptions.font, Chart.defaults.font);
+
+    const sourceY = xScale ? xScale.bottom - font.lineHeight / 2 : bottom + 28;
 
     ctx.save();
-    ctx.fillStyle = "#4a4a4a";
-    ctx.font = "11px Arial";
+    ctx.fillStyle = xTitleOptions.color ?? xTickOptions.color ?? "#000000";
+    ctx.font = font.string;
     ctx.textAlign = "right";
-    ctx.textBaseline = "bottom";
-    ctx.fillText(sourceText, right, bottom + 34);
+    ctx.textBaseline = "middle";
+    ctx.fillText(sourceText, right, sourceY);
     ctx.restore();
   }
 };
