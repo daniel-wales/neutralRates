@@ -309,13 +309,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function setupParameterSection(sectionConfig) {
     const countrySelect = document.getElementById(sectionConfig.selectCountryId);
+    const seriesSelect = document.getElementById("parameterSeriesSelect");
     const canvas = document.getElementById(sectionConfig.canvasId);
     const statusElement = document.getElementById(sectionConfig.statusId);
 
     const update = async () => {
       const selectedCountry = countrySelect.value;
+      const selectedSeries = getSelected(seriesSelect);
+
       if (!selectedCountry) {
         setStatus(statusElement, "Select a country to view parameter estimates.", "warning");
+        return;
+      }
+
+      if (!selectedSeries.length) {
+        setStatus(statusElement, "Select at least one display series.", "warning");
         return;
       }
 
@@ -323,14 +331,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
       try {
         const rows = await fetchParameterData(`${sectionConfig.sourcePath}/${selectedCountry}`);
-        renderParameterChart(canvas, rows);
-        setStatus(statusElement, `Showing ${rows.length} parameters.`, "success");
+        renderParameterChart(canvas, rows, selectedSeries);
+        setStatus(statusElement, `Showing ${rows.length} parameters with ${selectedSeries.length} selected series.`, "success");
       } catch (error) {
         setStatus(statusElement, `Error loading parameter chart: ${error.message}`, "error");
       }
     };
 
     countrySelect.addEventListener("change", update);
+    seriesSelect.addEventListener("change", update);
+    if (seriesSelect.multiple) enableClickToToggleMultiSelect(seriesSelect);
     setupCountryControls(sectionConfig, update);
 
     if (countrySelect.options.length && !countrySelect.value) {

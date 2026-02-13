@@ -104,6 +104,15 @@
           <select id="parameterCountrySelect" size="10"></select>
         </div>
 
+        <div class="control-group">
+          <label for="parameterSeriesSelect">Display:</label>
+          <select id="parameterSeriesSelect" multiple size="3">
+            <option value="prior" selected>Prior (Mean)</option>
+            <option value="posterior" selected>Posterior (Median)</option>
+            <option value="range" selected>Range (Lower to Upper)</option>
+          </select>
+        </div>
+
         <p id="parameterStatus" class="status-message" aria-live="polite"></p>
       </div>
     </div>
