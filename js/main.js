@@ -1,10 +1,18 @@
+/**
+ * Main UI orchestration module.
+ *
+ * Owns section state wiring, country/variable selection flows, dataset assembly,
+ * tab activation behavior, and status messaging for all dashboard panes.
+ */
 import { fetchData, fetchParameterData } from "./services/dataService.js";
-import { renderChart, renderParameterChart, getColors, getChartInstance } from "./services/chartService.js";
+import { renderChart, renderParameterChart, getColors, getChartInstance, zoomPluginLoaded } from "./services/chartService.js";
 import { downloadPNG, exportCSV } from "./services/exportService.js";
 import { variableConfig } from "./config/variables.js";
 import { countryCatalog, countryPresets, regionMedianGroups, sectionSupportedCountryCodes, getCountryFile } from "./config/countries.js";
+import { computeMedian, getDateLabels } from "./utils/datasetUtils.js";
 
 document.addEventListener("DOMContentLoaded", () => {
+  // Section-specific wiring metadata (selectors, sources, default selections).
   const economicConfig = {
     id: "economic",
     selectCountryId: "countrySelect",
@@ -47,12 +55,16 @@ document.addEventListener("DOMContentLoaded", () => {
     defaultCountries: ["usa"]
   };
 
+
+  // Lookup maps refreshed whenever country lists are rebuilt (search/preset changes).
   const countryMetadataBySection = {
     economic: new Map(),
     interest: new Map(),
     parameters: new Map()
   };
 
+
+  // Selection + interaction helpers.
   function getSelected(select) {
     return Array.from(select.selectedOptions).map(option => option.value);
   }
@@ -85,19 +97,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
   const countryByCode = new Map(countryCatalog.map(country => [country.code, country]));
-
-  function computeMedian(values) {
-    const numericValues = values
-      .map(value => (value == null ? Number.NaN : Number(value)))
-      .filter(Number.isFinite)
-      .sort((a, b) => a - b);
-
-    if (!numericValues.length) return null;
-
-    const middle = Math.floor(numericValues.length / 2);
-    if (numericValues.length % 2) return numericValues[middle];
-    return (numericValues[middle - 1] + numericValues[middle]) / 2;
-  }
 
   function computeOutputGap(outputLevel, trendOutputLevel) {
     if (!Number.isFinite(outputLevel) || !Number.isFinite(trendOutputLevel) || outputLevel <= 0 || trendOutputLevel <= 0) {
@@ -142,11 +141,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return data.series[key]?.[index] ?? null;
   }
 
-  function getDateLabels(dataItems) {
-    const allDates = [...new Set(dataItems.flatMap(data => data.dates || []))];
-    return allDates.sort();
-  }
-
   function getSeriesValueByDate(data, key, date) {
     const index = data.dateIndexMap?.get(date);
     if (index == null) return null;
@@ -183,6 +177,8 @@ document.addEventListener("DOMContentLoaded", () => {
     return { y, x };
   }
 
+
+  // Dataset assembly for both direct country series and regional medians.
   async function buildDatasets(selectedCountries, selectedVariables, sectionConfig) {
     const datasets = [];
     let colorIndex = 0;
@@ -387,6 +383,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+
+  // Section initialization routines.
   function setupParameterSection(sectionConfig) {
     const countrySelect = document.getElementById(sectionConfig.selectCountryId);
     const seriesSelect = document.getElementById("parameterSeriesSelect");
@@ -470,37 +468,63 @@ document.addEventListener("DOMContentLoaded", () => {
     if (countrySelect.multiple) enableClickToToggleMultiSelect(countrySelect);
     if (variableSelect.multiple) enableClickToToggleMultiSelect(variableSelect);
 
-    downloadButton.addEventListener("click", () => downloadPNG(getChartInstance(canvas)));
-    exportButton.addEventListener("click", () => exportCSV(getChartInstance(canvas)));
+    downloadButton.addEventListener("click", () => downloadPNG(getChartInstance(canvas), `${sectionConfig.id}-chart`));
+    exportButton.addEventListener("click", () => exportCSV(getChartInstance(canvas), `${sectionConfig.id}-chart-data`));
     resetButton.addEventListener("click", () => {
       const chart = getChartInstance(canvas);
-      if (chart) chart.resetZoom();
+      if (chart?.resetZoom) chart.resetZoom();
     });
 
     setupCountryControls(sectionConfig, update);
 
+    if (!zoomPluginLoaded()) {
+      setStatus(statusElement, "Chart zoom plugin unavailable (CDN load issue). Pan/zoom controls are disabled.", "warning");
+    }
+
     return update;
   }
 
+
+  // Tab activation and initial render pass.
   const updateEconomic = setupChartSection(economicConfig);
   const updateParameters = setupParameterSection(parameterConfig);
   const updateInterest = setupChartSection(interestConfig);
 
-  document.querySelectorAll(".tab-button").forEach(button => {
-    button.addEventListener("click", () => {
-      const target = button.dataset.tab;
-      document.querySelectorAll(".tab-content").forEach(tab => (tab.style.display = "none"));
-      document.querySelectorAll(".tab-button").forEach(tabButton => tabButton.classList.remove("active"));
-      document.getElementById(`tab-${target}`).style.display = "block";
-      button.classList.add("active");
+  const tabButtons = Array.from(document.querySelectorAll(".tab-button"));
 
-      if (target === "economic") updateEconomic();
-      if (target === "parameters") updateParameters();
-      if (target === "interest") updateInterest();
+  const activateTab = target => {
+    document.querySelectorAll(".tab-content").forEach(tab => {
+      const isActive = tab.id === `tab-${target}`;
+      tab.style.display = isActive ? "block" : "none";
+      tab.setAttribute("aria-hidden", String(!isActive));
+    });
+
+    tabButtons.forEach(tabButton => {
+      const isActive = tabButton.dataset.tab === target;
+      tabButton.classList.toggle("active", isActive);
+      tabButton.setAttribute("aria-selected", String(isActive));
+      tabButton.tabIndex = isActive ? 0 : -1;
+    });
+
+    if (target === "economic") updateEconomic();
+    if (target === "parameters") updateParameters();
+    if (target === "interest") updateInterest();
+  };
+
+  tabButtons.forEach((button, index) => {
+    button.addEventListener("click", () => activateTab(button.dataset.tab));
+    button.addEventListener("keydown", event => {
+      if (!["ArrowRight", "ArrowLeft", "Home", "End"].includes(event.key)) return;
+      event.preventDefault();
+      const nextIndex =
+        event.key === "Home" ? 0 :
+          event.key === "End" ? tabButtons.length - 1 :
+            (index + (event.key === "ArrowRight" ? 1 : -1) + tabButtons.length) % tabButtons.length;
+      tabButtons[nextIndex].focus();
+      activateTab(tabButtons[nextIndex].dataset.tab);
     });
   });
 
-  updateEconomic();
-  updateParameters();
-  updateInterest();
+  const initialTab = tabButtons.find(button => button.classList.contains("active"))?.dataset.tab || "economic";
+  activateTab(initialTab);
 });

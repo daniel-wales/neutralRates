@@ -1,3 +1,10 @@
+/**
+ * Chart rendering service for time-series and parameter visualizations.
+ *
+ * Assumptions:
+ * - Chart.js is loaded globally before this module runs.
+ * - Zoom plugin may be unavailable (e.g., CDN failure), and charts should still render.
+ */
 import { colors } from "../config/variables.js";
 
 const chartTheme = {
@@ -11,7 +18,8 @@ const chartTheme = {
 };
 
 // Register zoom plugin from CDN (required for ES modules)
-if (window.ChartZoom) {
+const isZoomPluginAvailable = Boolean(window.ChartZoom);
+if (isZoomPluginAvailable) {
   Chart.register(window.ChartZoom);
 }
 
@@ -86,31 +94,35 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits =
           borderWidth: 1
         },
 
-        zoom: {
-          limits: {
-            x: axisLimits.x ?? {},
-            y: axisLimits.y ?? {}
-          },
-          pan: {
-            enabled: true,
-            mode: "x",
-            threshold: 5
-          },
-          zoom: {
-            wheel: {
-              enabled: true,
-              speed: 0.1
-            },
-            pinch: {
-              enabled: true
-            },
-            drag: {
-              enabled: true,
-              backgroundColor: "rgba(0,0,0,0.1)"
-            },
-            mode: "x"
-          }
-        }
+        ...(isZoomPluginAvailable
+          ? {
+              zoom: {
+                limits: {
+                  x: axisLimits.x ?? {},
+                  y: axisLimits.y ?? {}
+                },
+                pan: {
+                  enabled: true,
+                  mode: "x",
+                  threshold: 5
+                },
+                zoom: {
+                  wheel: {
+                    enabled: true,
+                    speed: 0.1
+                  },
+                  pinch: {
+                    enabled: true
+                  },
+                  drag: {
+                    enabled: true,
+                    backgroundColor: "rgba(0,0,0,0.1)"
+                  },
+                  mode: "x"
+                }
+              }
+            }
+          : {})
       },
 
       elements: {
@@ -504,4 +516,9 @@ export function renderParameterChart(ctx, rows, selectedSeries = ["prior", "post
   activeChart = chart;
 
   return chart;
+}
+
+
+export function zoomPluginLoaded() {
+  return isZoomPluginAvailable;
 }

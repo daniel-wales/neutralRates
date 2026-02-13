@@ -1,3 +1,16 @@
+import { parseCSV } from "../utils/csv.js";
+
+/**
+ * Data retrieval service for chart series and parameter tables.
+ *
+ * Assumptions:
+ * - Files are UTF-8 CSV and include headers.
+ * - Main data uses Year/Month columns, or falls back to index positions.
+ *
+ * Failure modes:
+ * - Throws descriptive errors for network failures, HTTP failures, malformed CSV,
+ *   missing required columns, and empty/invalid parse results.
+ */
 const cache = {};
 
 export async function fetchData(file) {
@@ -19,9 +32,11 @@ export async function fetchData(file) {
     throw new Error(`Received empty CSV content from ${file}`);
   }
 
-  const lines = csv.trim().split("\n");
-  const header = lines[0].split(",").map(col => col.trim());
-  const rows = lines.slice(1);
+  const rows = parseCSV(csv);
+  if (!rows.length) throw new Error(`No CSV rows found in ${file}`);
+
+  const header = rows[0];
+  const dataRows = rows.slice(1);
 
   const dates = [];
   const series = {};
@@ -41,15 +56,18 @@ export async function fetchData(file) {
     series[columnName] = [];
   });
 
-  rows.forEach(row => {
-    const cols = row.split(",").map(col => col.trim());
-    if (cols.length !== header.length) return;
+  dataRows.forEach(row => {
+    if (row.length < header.length) return;
 
-    const formattedDate = `${cols[safeYearIndex]}-${String(cols[safeMonthIndex]).padStart(2, "0")}`;
+    const year = Number.parseInt(row[safeYearIndex], 10);
+    const month = Number.parseInt(row[safeMonthIndex], 10);
+    if (!Number.isInteger(year) || !Number.isInteger(month)) return;
+
+    const formattedDate = `${year}-${String(month).padStart(2, "0")}`;
     dates.push(formattedDate);
 
     valueColumnIndices.forEach(index => {
-      const val = parseFloat(cols[index]);
+      const val = Number.parseFloat(row[index]);
       series[header[index]].push(Number.isNaN(val) ? null : val);
     });
   });
@@ -61,7 +79,6 @@ export async function fetchData(file) {
   cache[file] = { dates, series };
   return cache[file];
 }
-
 
 export async function fetchParameterData(file) {
   if (cache[file]) return cache[file];
@@ -82,8 +99,10 @@ export async function fetchParameterData(file) {
     throw new Error(`Received empty CSV content from ${file}`);
   }
 
-  const rows = csv.trim().split("\n");
-  const headers = rows[0].split(",").map(column => column.trim());
+  const rows = parseCSV(csv);
+  if (!rows.length) throw new Error(`No CSV rows found in ${file}`);
+
+  const headers = rows[0];
 
   const parameterIndex = headers.indexOf("Parameter");
   const priorIndex = headers.indexOf("Mean");
@@ -96,7 +115,6 @@ export async function fetchParameterData(file) {
   }
 
   const parsedRows = rows.slice(1)
-    .map(row => row.split(",").map(value => value.trim()))
     .filter(columns => columns.length >= headers.length)
     .map(columns => ({
       parameter: columns[parameterIndex],

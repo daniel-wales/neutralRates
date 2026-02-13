@@ -24,16 +24,16 @@
 </header>
 
 <!-- 🔹 Tab buttons -->
-<div class="tabs">
-  <button data-tab="economic" class="tab-button active">Inputs (Data)</button>
-  <button data-tab="parameters" class="tab-button">Estimation (Process)</button>
-  <button data-tab="interest" class="tab-button">Outputs (Results)</button>
-  <button data-tab="decompositions" class="tab-button">Decompositions</button>
+<div class="tabs" role="tablist" aria-label="Dashboard sections">
+  <button data-tab="economic" class="tab-button active" id="tab-button-economic" role="tab" aria-selected="true" aria-controls="tab-economic">Inputs (Data)</button>
+  <button data-tab="parameters" class="tab-button" id="tab-button-parameters" role="tab" aria-selected="false" aria-controls="tab-parameters" tabindex="-1">Estimation (Process)</button>
+  <button data-tab="interest" class="tab-button" id="tab-button-interest" role="tab" aria-selected="false" aria-controls="tab-interest" tabindex="-1">Outputs (Results)</button>
+  <button data-tab="decompositions" class="tab-button" id="tab-button-decompositions" role="tab" aria-selected="false" aria-controls="tab-decompositions" tabindex="-1">Decompositions</button>
 </div>
 
 <!-- 🔹 Tab contents -->
 <!-- 1️⃣ Economic Data Tab -->
-<div id="tab-economic" class="tab-content">
+<div id="tab-economic" class="tab-content" role="tabpanel" aria-labelledby="tab-button-economic">
   <div class="tab-layout">
     <div class="side-panel">
       <div class="controls">
@@ -45,7 +45,7 @@
     <input id="countrySearch" type="search" placeholder="Search countries..." class="country-search">
     <div class="preset-buttons" id="economicPresets">
       <button type="button" data-preset="US">US</button>
-      <button type="button" data-preset="G7">G7</button>
+      <button type="button" data-preset="G7">G7 subset</button>
       <button type="button" data-preset="EM_ASIA">EM Asia</button>
       <button type="button" data-preset="CLEAR">Clear</button>
     </div>
@@ -86,7 +86,7 @@
 </div>
 
 <!-- 2️⃣ Country Parameters Tab -->
-<div id="tab-parameters" class="tab-content" style="display:none;">
+<div id="tab-parameters" class="tab-content" role="tabpanel" aria-labelledby="tab-button-parameters" aria-hidden="true" style="display:none;">
   <div class="tab-layout">
     <div class="side-panel">
       <div class="controls">
@@ -121,7 +121,7 @@
 </div>
 
 <!-- 3️⃣ Interest Rates Tab -->
-<div id="tab-interest" class="tab-content" style="display:none;">
+<div id="tab-interest" class="tab-content" role="tabpanel" aria-labelledby="tab-button-interest" aria-hidden="true" style="display:none;">
   <div class="tab-layout">
     <div class="side-panel">
       <div class="controls">
@@ -131,7 +131,7 @@
           <input id="interestCountrySearch" type="search" placeholder="Search countries..." class="country-search">
           <div class="preset-buttons" id="interestPresets">
             <button type="button" data-preset="US">US</button>
-            <button type="button" data-preset="G7">G7</button>
+            <button type="button" data-preset="G7">G7 subset</button>
             <button type="button" data-preset="EM_ASIA">EM Asia</button>
             <button type="button" data-preset="CLEAR">Clear</button>
           </div>
