@@ -132,30 +132,13 @@ document.addEventListener("DOMContentLoaded", () => {
       if (!labels.length) labels = data.dates;
 
       for (const variable of selectedVariables) {
-        if (variable === "rstar_lw") {
-          datasets.push({
-            label: `${country.replace("rstar_HLW_SV_", "").replace(".csv", "")} - rstar_lw`,
-            data: data.series.rstar_lw,
-            borderColor: getColors(colorIndex++),
-            tension: 0.2,
-            spanGaps: true
-          });
-          datasets.push({
-            label: `${country.replace("rstar_HLW_SV_", "").replace(".csv", "")} - rrobs`,
-            data: data.series.rrobs,
-            borderColor: getColors(colorIndex++),
-            tension: 0.2,
-            spanGaps: true
-          });
-        } else {
-          datasets.push({
-            label: `${country.replace("rstar_HLW_SV_", "").replace(".csv", "")} - ${variable}`,
-            data: data.series[variable],
-            borderColor: getColors(colorIndex++),
-            tension: 0.2,
-            spanGaps: true
-          });
-        }
+        datasets.push({
+          label: `${country.replace("rstar_HLW_SV_", "").replace(".csv", "")} - ${variable}`,
+          data: data.series[variable],
+          borderColor: getColors(colorIndex++),
+          tension: 0.2,
+          spanGaps: true
+        });
       }
     }
 

@@ -60,7 +60,13 @@ export const variableConfig = {
     label: "g star (LW)",
     unit: "percent",
     yAxisLabel: "Percent"
-  }]
+  }],
+  "rrobs": [{
+    key: "rrobs",
+    label: "Observed Real Rate",
+    unit: "percent",
+    yAxisLabel: "Percent"
+  }],
 };
 
 export const colors = [
