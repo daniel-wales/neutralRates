@@ -47,6 +47,13 @@ export const variableConfig = {
     unit: "index",
     yAxisLabel: "Index"
   }]
+
+  "rstar_lw": [{
+    key: "rstar_lw",
+    label: "r star (LW)",
+    unit: "percent",
+    yAxisLabel: "Percent"
+  }]
 };
 
 export const colors = [
