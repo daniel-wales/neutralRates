@@ -1,8 +1,12 @@
+/* ========================= */
+/* 🌐 Base Styles            */
+/* ========================= */
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   padding: 20px;
   background: #eef2f7;
   color: #2c3e50;
+  margin: 0;
 }
 
 h2 {
@@ -10,11 +14,15 @@ h2 {
   font-weight: 600;
 }
 
+/* Mode toggle (if used) */
 .mode-toggle {
   margin-bottom: 20px;
   font-size: 14px;
 }
 
+/* ========================= */
+/* 🔹 Controls (dropdowns, buttons) */
+/* ========================= */
 .controls {
   margin-bottom: 25px;
   display: flex;
@@ -23,6 +31,14 @@ h2 {
   align-items: flex-start;
 }
 
+/* Control groups (label + select) */
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 5px; /* spacing between label and select */
+}
+
+/* Select dropdowns */
 select {
   padding: 8px 12px;
   min-width: 240px;
@@ -30,8 +46,18 @@ select {
   border: 1px solid #ccd3dd;
   background: white;
   font-size: 14px;
+  display: block;
+  box-sizing: border-box;
 }
 
+/* Buttons container */
+.buttons {
+  display: flex;
+  gap: 10px; /* space between buttons */
+  flex-wrap: wrap;
+}
+
+/* Buttons */
 button {
   padding: 8px 14px;
   border-radius: 6px;
@@ -47,23 +73,74 @@ button:hover {
   background: #155a8a;
 }
 
+/* ========================= */
+/* 🔹 Tabs */
+/* ========================= */
+.tabs {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.tab-button {
+  padding: 8px 14px;
+  border: none;
+  border-radius: 6px;
+  background: #dfe6ed;
+  cursor: pointer;
+  font-weight: 500;
+  transition: 0.2s ease;
+}
+
+.tab-button.active {
+  background: #1f77b4;
+  color: white;
+}
+
+.tab-button:hover:not(.active) {
+  background: #c7d2db;
+}
+
+/* ========================= */
 /* 🔹 Chart Container */
+/* ========================= */
 .chart-container {
   position: relative;
   width: 100%;
-  max-width: 800px;   /* maximum width of chart */
-  height: 350px;      /* chart height */
-  margin: 30px auto;  /* center chart */
+  max-width: 800px;    /* max width on large screens */
+  height: 350px;       /* chart height */
+  margin: 30px auto;   /* center chart */
 }
 
-/* 🔹 Canvas inside container */
 .chart-container canvas {
   background: white;
   border-radius: 10px;
   padding: 10px;
   box-shadow: 0 6px 18px rgba(0,0,0,0.06);
   width: 100%;
-  height: 100%;       /* fills container height */
+  height: 100%;
+}
+
+/* ========================= */
+/* 🔹 Tables (Parameters tab) */
+/* ========================= */
+#parametersTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 14px;
+}
+
+#parametersTable th,
+#parametersTable td {
+  border: 1px solid #ccd3dd;
+  padding: 8px 12px;
+  text-align: left;
+}
+
+#parametersTable th {
+  background-color: #f2f6fa;
+  font-weight: 600;
 }
 
 /* ========================= */
@@ -80,9 +157,17 @@ button:hover {
     gap: 20px;
   }
 
+  .control-group {
+    width: 100%;
+  }
+
   select {
     width: 100%;
     min-width: unset;
+  }
+
+  .buttons {
+    flex-direction: column;
   }
 
   button {
@@ -91,5 +176,10 @@ button:hover {
 
   .chart-container canvas {
     padding: 5px;
+  }
+
+  .tabs {
+    flex-direction: column;
+    gap: 10px;
   }
 }
