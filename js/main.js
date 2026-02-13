@@ -1,8 +1,8 @@
-import { fetchData } from "./services/dataService.js";
-import { renderChart, getColors, getChartInstance } from "./services/chartService.js";
+import { fetchData, fetchParameterData } from "./services/dataService.js";
+import { renderChart, renderParameterChart, getColors, getChartInstance } from "./services/chartService.js";
 import { downloadPNG, exportCSV } from "./services/exportService.js";
 import { variableConfig } from "./config/variables.js";
-import { countryCatalog, countryPresets, regionMedianGroups, getCountryFile } from "./config/countries.js";
+import { countryCatalog, countryPresets, regionMedianGroups, sectionSupportedCountryCodes, getCountryFile } from "./config/countries.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const economicConfig = {
@@ -37,9 +37,21 @@ document.addEventListener("DOMContentLoaded", () => {
     formatLabel: (file, variable) => `${file.replace("rstar_HLW_SV_", "").replace(".csv", "")} - ${variable}`
   };
 
+  const parameterConfig = {
+    id: "parameters",
+    selectCountryId: "parameterCountrySelect",
+    countrySearchId: "parameterCountrySearch",
+    presetContainerId: "parameterPresets",
+    canvasId: "parameterChart",
+    sourcePath: "tables",
+    statusId: "parameterStatus",
+    defaultCountries: ["usa"]
+  };
+
   const countryMetadataBySection = {
     economic: new Map(),
-    interest: new Map()
+    interest: new Map(),
+    parameters: new Map()
   };
 
   function getSelected(select) {
@@ -200,25 +212,30 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function buildCountrySelect(select, sectionId, query = "", selectedValues = new Set()) {
-    const filtered = countryCatalog.filter(country => country.name.toLowerCase().includes(query.toLowerCase()));
+    const supportedCodes = new Set(sectionSupportedCountryCodes[sectionId] || []);
+    const filtered = countryCatalog
+      .filter(country => country.name.toLowerCase().includes(query.toLowerCase()))
+      .filter(country => !supportedCodes.size || supportedCodes.has(country.code));
     const grouped = groupByRegion(filtered);
 
     select.innerHTML = "";
     countryMetadataBySection[sectionId].clear();
 
-    const medianOptgroup = document.createElement("optgroup");
-    medianOptgroup.label = "Regional medians";
+    if (sectionId !== "parameters") {
+      const medianOptgroup = document.createElement("optgroup");
+      medianOptgroup.label = "Regional medians";
 
-    regionMedianGroups.forEach(group => {
-      const value = `median:${group.code}`;
-      const option = document.createElement("option");
-      option.value = value;
-      option.textContent = group.name;
-      option.selected = selectedValues.has(value);
-      medianOptgroup.appendChild(option);
-    });
+      regionMedianGroups.forEach(group => {
+        const value = `median:${group.code}`;
+        const option = document.createElement("option");
+        option.value = value;
+        option.textContent = group.name;
+        option.selected = selectedValues.has(value);
+        medianOptgroup.appendChild(option);
+      });
 
-    select.appendChild(medianOptgroup);
+      select.appendChild(medianOptgroup);
+    }
 
     Object.keys(grouped).forEach(region => {
       const optgroup = document.createElement("optgroup");
@@ -290,6 +307,39 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  function setupParameterSection(sectionConfig) {
+    const countrySelect = document.getElementById(sectionConfig.selectCountryId);
+    const canvas = document.getElementById(sectionConfig.canvasId);
+    const statusElement = document.getElementById(sectionConfig.statusId);
+
+    const update = async () => {
+      const selectedCountry = countrySelect.value;
+      if (!selectedCountry) {
+        setStatus(statusElement, "Select a country to view parameter estimates.", "warning");
+        return;
+      }
+
+      setStatus(statusElement, "Loading parameter table...", "warning");
+
+      try {
+        const rows = await fetchParameterData(`${sectionConfig.sourcePath}/${selectedCountry}`);
+        renderParameterChart(canvas, rows);
+        setStatus(statusElement, `Showing ${rows.length} parameters.`, "success");
+      } catch (error) {
+        setStatus(statusElement, `Error loading parameter chart: ${error.message}`, "error");
+      }
+    };
+
+    countrySelect.addEventListener("change", update);
+    setupCountryControls(sectionConfig, update);
+
+    if (countrySelect.options.length && !countrySelect.value) {
+      countrySelect.options[0].selected = true;
+    }
+
+    return update;
+  }
+
   function setupChartSection(sectionConfig) {
     const countrySelect = document.getElementById(sectionConfig.selectCountryId);
     const variableSelect = document.getElementById(sectionConfig.selectVariableId);
@@ -327,8 +377,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     countrySelect.addEventListener("change", update);
     variableSelect.addEventListener("change", update);
-    enableClickToToggleMultiSelect(countrySelect);
-    enableClickToToggleMultiSelect(variableSelect);
+    if (countrySelect.multiple) enableClickToToggleMultiSelect(countrySelect);
+    if (variableSelect.multiple) enableClickToToggleMultiSelect(variableSelect);
 
     downloadButton.addEventListener("click", () => downloadPNG(getChartInstance(canvas)));
     exportButton.addEventListener("click", () => exportCSV(getChartInstance(canvas)));
@@ -343,6 +393,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   const updateEconomic = setupChartSection(economicConfig);
+  const updateParameters = setupParameterSection(parameterConfig);
   const updateInterest = setupChartSection(interestConfig);
 
   document.querySelectorAll(".tab-button").forEach(button => {
@@ -354,10 +405,12 @@ document.addEventListener("DOMContentLoaded", () => {
       button.classList.add("active");
 
       if (target === "economic") updateEconomic();
+      if (target === "parameters") updateParameters();
       if (target === "interest") updateInterest();
     });
   });
 
   updateEconomic();
+  updateParameters();
   updateInterest();
 });

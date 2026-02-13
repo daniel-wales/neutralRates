@@ -87,19 +87,33 @@
 
 <!-- 2️⃣ Country Parameters Tab -->
 <div id="tab-parameters" class="tab-content" style="display:none;">
-  <table id="parametersTable" border="1">
-    <thead>
-      <tr>
-        <th>Country</th>
-        <th>Parameter A</th>
-        <th>Parameter B</th>
-        <th>Parameter C</th>
-      </tr>
-    </thead>
-    <tbody>
-      <!-- Rows filled by JS -->
-    </tbody>
-  </table>
+  <div class="tab-layout">
+    <div class="side-panel">
+      <div class="controls">
+        <p class="control-hint">Tip: select one country to inspect priors, posteriors, and credible intervals.</p>
+
+        <div class="control-group">
+          <label for="parameterCountrySelect">Countries:</label>
+          <input id="parameterCountrySearch" type="search" placeholder="Search countries..." class="country-search">
+          <div class="preset-buttons" id="parameterPresets">
+            <button type="button" data-preset="US">US</button>
+            <button type="button" data-preset="G7">G7</button>
+            <button type="button" data-preset="EM_ASIA">EM Asia</button>
+            <button type="button" data-preset="CLEAR">Clear</button>
+          </div>
+          <select id="parameterCountrySelect" size="10"></select>
+        </div>
+
+        <p id="parameterStatus" class="status-message" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <div class="main-panel">
+      <div class="chart-container">
+        <canvas id="parameterChart" height="300"></canvas>
+      </div>
+    </div>
+  </div>
 </div>
 
 <!-- 3️⃣ Interest Rates Tab -->

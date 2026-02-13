@@ -66,21 +66,25 @@ h1 {
 }
 
 #tab-economic .controls,
-#tab-interest .controls {
+#tab-interest .controls,
+#tab-parameters .controls {
   margin-bottom: 0;
 }
 
 #tab-economic select,
-#tab-interest select {
+#tab-interest select,
+#tab-parameters select {
   width: 100%;
 }
 
 #tab-economic .control-group label,
-#tab-interest .control-group label {
+#tab-interest .control-group label,
+#tab-parameters .control-group label {
   font-weight: 600;
 }
 
-#tab-interest #interestCountrySelect {
+#tab-interest #interestCountrySelect,
+#tab-parameters #parameterCountrySelect {
   min-height: 240px;
 }
 
@@ -119,8 +123,8 @@ h1 {
 }
 
 #tab-parameters .chart-container {
-  margin: 30px auto;
-  max-width: 800px;
+  margin: 0;
+  max-width: 960px;
 }
 
 .buttons {
@@ -309,7 +313,8 @@ button:hover {
   }
 
   #tab-interest #interestCountrySelect,
-  #tab-economic #countrySelect {
+  #tab-economic #countrySelect,
+  #tab-parameters #parameterCountrySelect {
     min-height: 200px;
   }
 
