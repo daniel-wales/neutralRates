@@ -176,3 +176,115 @@ export function getChartInstance(ctx = null) {
   if (ctx) return chartsByCanvas.get(ctx) || null;
   return activeChart;
 }
+
+
+export function renderParameterChart(ctx, rows) {
+  const existingChart = chartsByCanvas.get(ctx);
+  if (existingChart) existingChart.destroy();
+
+  const labels = rows.map(row => row.parameter);
+
+  const chart = new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels,
+      datasets: [
+        {
+          type: "bar",
+          label: "Range (Lower to Upper)",
+          data: rows.map(row => [row.lower, row.upper]),
+          backgroundColor: "rgba(31, 119, 180, 0.25)",
+          borderColor: "rgba(31, 119, 180, 0.8)",
+          borderWidth: 1,
+          borderSkipped: false,
+          barPercentage: 0.72,
+          categoryPercentage: 0.9
+        },
+        {
+          type: "line",
+          label: "Prior (Mean)",
+          data: rows.map(row => row.prior),
+          borderColor: "#e67e22",
+          backgroundColor: "#e67e22",
+          showLine: false,
+          pointRadius: 4,
+          pointHoverRadius: 5
+        },
+        {
+          type: "line",
+          label: "Posterior (Mean_1)",
+          data: rows.map(row => row.posterior),
+          borderColor: "#2f7a3e",
+          backgroundColor: "#2f7a3e",
+          showLine: false,
+          pointRadius: 4,
+          pointHoverRadius: 5
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          bottom: 44
+        }
+      },
+      plugins: {
+        legend: {
+          position: "top"
+        },
+        tooltip: {
+          backgroundColor: "#ffffff",
+          titleColor: "#000000",
+          bodyColor: "#000000",
+          borderColor: "#000000",
+          borderWidth: 1
+        }
+      },
+      scales: {
+        x: {
+          ticks: {
+            color: "#000000",
+            maxRotation: 70,
+            minRotation: 45,
+            autoSkip: false
+          },
+          title: {
+            display: true,
+            text: "Parameters",
+            color: "#000000"
+          },
+          grid: {
+            display: false
+          },
+          border: {
+            color: "#000000"
+          }
+        },
+        y: {
+          ticks: {
+            color: "#000000"
+          },
+          title: {
+            display: true,
+            text: "Value",
+            color: "#000000"
+          },
+          grid: {
+            color: "#e0e0e0"
+          },
+          border: {
+            color: "#000000"
+          }
+        }
+      }
+    },
+    plugins: [sourceLabelPlugin]
+  });
+
+  chartsByCanvas.set(ctx, chart);
+  activeChart = chart;
+
+  return chart;
+}

@@ -61,3 +61,56 @@ export async function fetchData(file) {
   cache[file] = { dates, series };
   return cache[file];
 }
+
+
+export async function fetchParameterData(file) {
+  if (cache[file]) return cache[file];
+
+  let res;
+  try {
+    res = await fetch(file);
+  } catch (error) {
+    throw new Error(`Network error while requesting ${file}: ${error.message}`);
+  }
+
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} when requesting ${file}`);
+  }
+
+  const csv = await res.text();
+  if (!csv.trim()) {
+    throw new Error(`Received empty CSV content from ${file}`);
+  }
+
+  const rows = csv.trim().split("\n");
+  const headers = rows[0].split(",").map(column => column.trim());
+
+  const parameterIndex = headers.indexOf("Parameter");
+  const priorIndex = headers.indexOf("Mean");
+  const posteriorIndex = headers.indexOf("Mean_1");
+  const lowerIndex = headers.indexOf("Lower");
+  const upperIndex = headers.indexOf("Upper");
+
+  if ([parameterIndex, priorIndex, posteriorIndex, lowerIndex, upperIndex].some(index => index < 0)) {
+    throw new Error(`Missing required parameter columns in ${file}`);
+  }
+
+  const parsedRows = rows.slice(1)
+    .map(row => row.split(",").map(value => value.trim()))
+    .filter(columns => columns.length >= headers.length)
+    .map(columns => ({
+      parameter: columns[parameterIndex],
+      prior: Number.parseFloat(columns[priorIndex]),
+      posterior: Number.parseFloat(columns[posteriorIndex]),
+      lower: Number.parseFloat(columns[lowerIndex]),
+      upper: Number.parseFloat(columns[upperIndex])
+    }))
+    .filter(item => Number.isFinite(item.prior) && Number.isFinite(item.posterior) && Number.isFinite(item.lower) && Number.isFinite(item.upper));
+
+  if (!parsedRows.length) {
+    throw new Error(`No valid parameter rows parsed from ${file}`);
+  }
+
+  cache[file] = parsedRows;
+  return cache[file];
+}

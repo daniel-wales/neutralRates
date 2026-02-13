@@ -79,6 +79,22 @@ export const regionMedianGroups = [
   }
 ];
 
+export const sectionSupportedCountryCodes = {
+  economic: [
+    "aus", "bgd", "blr", "bra", "can", "chl", "col", "cri", "cze", "dom", "egy", "gbr", "gtm",
+    "hun", "idn", "ind", "isr", "jpn", "kor", "mex", "mys", "nga", "nor", "nzl", "pak", "per",
+    "phl", "pol", "pry", "rou", "rus", "srb", "swe", "tha", "tur", "ury", "usa", "vnm", "zaf"
+  ],
+  interest: [
+    "blr", "bra", "chl", "col", "cri", "dom", "egy", "gtm", "hun", "idn", "ind", "mex", "mys",
+    "per", "phl", "pol", "pry", "rou", "srb", "tha", "ury", "usa", "vnm"
+  ],
+  parameters: [
+    "blr", "bra", "chl", "col", "cri", "dom", "egy", "gtm", "hun", "idn", "ind", "mex", "mys",
+    "per", "phl", "pol", "pry", "rou", "srb", "tha", "ury", "usa", "vnm"
+  ]
+};
+
 function getOutputCode(country) {
   return country.outputCode || country.code;
 }
@@ -86,5 +102,6 @@ function getOutputCode(country) {
 export function getCountryFile(country, section) {
   if (section === "economic") return `${country.code}_Data.csv`;
   if (section === "interest") return `rstar_HLW_SV_${getOutputCode(country)}.csv`;
+  if (section === "parameters") return `table_param_HLW_SV_${getOutputCode(country)}.csv`;
   return "";
 }
