@@ -28,13 +28,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------------------
   // 🔹 Helpers
   // ---------------------
-  function getMode() {
-    const modeInput = document.querySelector("input[name='mode']:checked");
-    return modeInput ? modeInput.value : "countries"; // fallback
-  }
-
   function getSelected(select) {
     return Array.from(select.selectedOptions).map(o => o.value);
+  }
+
+  function enableClickToToggleMultiSelect(select) {
+    select.addEventListener("mousedown", (event) => {
+      const option = event.target;
+      if (option.tagName !== "OPTION") return;
+
+      event.preventDefault();
+      option.selected = !option.selected;
+      select.dispatchEvent(new Event("change", { bubbles: true }));
+    });
   }
 
   function getClampedBounds(values) {
@@ -71,7 +77,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // 🔹 Update Economic Data Chart
   // ---------------------
   async function updateChart() {
-    const mode = getMode();
     const selectedCountries = getSelected(countrySelect);
     const selectedVariables = getSelected(variableSelect);
 
@@ -81,29 +86,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let labels = [];
     let colorIndex = 0;
 
-    // 1️⃣ Compare Countries mode
-    if (mode === "countries") {
-      const variable = selectedVariables[0];
-      for (const file of selectedCountries) {
-        const data = await fetchData(`data/${file}`);
-        if (!labels.length) labels = data.dates;
-        const config = variableConfig[variable];
-        config.forEach(item => {
-          datasets.push({
-            label: `${file.replace("_Data.csv","")} - ${item.label}`,
-            data: data.series[item.key],
-            borderColor: getColors(colorIndex++),
-            tension: 0.2,
-            spanGaps: true
-          });
-        });
-      }
-    }
-    // 2️⃣ Compare Variables mode
-    else if (mode === "variables") {
-      const file = selectedCountries[0];
+    for (const file of selectedCountries) {
       const data = await fetchData(`data/${file}`);
-      labels = data.dates;
+      if (!labels.length) labels = data.dates;
       for (const variable of selectedVariables) {
         const config = variableConfig[variable];
         config.forEach(item => {
@@ -115,25 +100,6 @@ document.addEventListener("DOMContentLoaded", () => {
             spanGaps: true
           });
         });
-      }
-    }
-    // 3️⃣ Mixed mode
-    else if (mode === "mixed") {
-      for (const file of selectedCountries) {
-        const data = await fetchData(`data/${file}`);
-        if (!labels.length) labels = data.dates;
-        for (const variable of selectedVariables) {
-          const config = variableConfig[variable];
-          config.forEach(item => {
-            datasets.push({
-              label: `${file.replace("_Data.csv","")} - ${item.label}`,
-              data: data.series[item.key],
-              borderColor: getColors(colorIndex++),
-              tension: 0.2,
-              spanGaps: true
-            });
-          });
-        }
       }
     }
 
@@ -208,7 +174,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------------------
   countrySelect.addEventListener("change", updateChart);
   variableSelect.addEventListener("change", updateChart);
-  document.querySelectorAll("input[name='mode']").forEach(r => r.addEventListener("change", updateChart));
+  enableClickToToggleMultiSelect(countrySelect);
+  enableClickToToggleMultiSelect(variableSelect);
   downloadPNGBtn.addEventListener("click", () => downloadPNG(getChartInstance(ctx)));
   exportCSVBtn.addEventListener("click", () => exportCSV(lastRenderedData));
   document.getElementById("resetZoom").addEventListener("click", () => {
@@ -221,6 +188,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------------------
   interestCountrySelect.addEventListener("change", updateInterestChart);
   interestVariableSelect.addEventListener("change", updateInterestChart);
+  enableClickToToggleMultiSelect(interestCountrySelect);
+  enableClickToToggleMultiSelect(interestVariableSelect);
   downloadInterestPNG.addEventListener("click", () => downloadPNG(getChartInstance(interestCtx)));
   exportInterestCSV.addEventListener("click", () => exportCSV(lastInterestData));
   document.getElementById("resetInterestZoom").addEventListener("click", () => {
