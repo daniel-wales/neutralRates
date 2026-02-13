@@ -1,17 +1,30 @@
 const cache = {};
 
 export async function fetchData(file) {
- if (cache[file]) return cache[file];
+  if (cache[file]) return cache[file];
 
- const res = await fetch(file);
- const csv = await res.text();
+  let res;
+  try {
+    res = await fetch(file);
+  } catch (error) {
+    throw new Error(`Network error while requesting ${file}: ${error.message}`);
+  }
 
- const lines = csv.trim().split("\n");
- const header = lines[0].split(",").map(col => col.trim());
- const rows = lines.slice(1);
+  if (!res.ok) {
+    throw new Error(`HTTP ${res.status} when requesting ${file}`);
+  }
 
- const dates = [];
- const series = {};
+  const csv = await res.text();
+  if (!csv.trim()) {
+    throw new Error(`Received empty CSV content from ${file}`);
+  }
+
+  const lines = csv.trim().split("\n");
+  const header = lines[0].split(",").map(col => col.trim());
+  const rows = lines.slice(1);
+
+  const dates = [];
+  const series = {};
 
   const normalizedHeader = header.map(col => col.toLowerCase());
   const yearIndex = normalizedHeader.indexOf("year");
@@ -28,20 +41,23 @@ export async function fetchData(file) {
     series[columnName] = [];
   });
 
- rows.forEach(row => {
-   const cols = row.split(",").map(col => col.trim());
-   if (cols.length !== header.length) return;
+  rows.forEach(row => {
+    const cols = row.split(",").map(col => col.trim());
+    if (cols.length !== header.length) return;
 
-    const formattedDate = `${cols[safeYearIndex]}-${String(cols[safeMonthIndex]).padStart(2,"0")}`;
-   dates.push(formattedDate);
-
+    const formattedDate = `${cols[safeYearIndex]}-${String(cols[safeMonthIndex]).padStart(2, "0")}`;
+    dates.push(formattedDate);
 
     valueColumnIndices.forEach(index => {
       const val = parseFloat(cols[index]);
-      series[header[index]].push(isNaN(val) ? null : val);
+      series[header[index]].push(Number.isNaN(val) ? null : val);
     });
- });
+  });
 
- cache[file] = { dates, series };
- return cache[file];
+  if (!dates.length) {
+    throw new Error(`No valid rows parsed from ${file}`);
+  }
+
+  cache[file] = { dates, series };
+  return cache[file];
 }
