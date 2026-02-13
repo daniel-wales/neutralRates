@@ -4,6 +4,7 @@ export async function fetchData(file) {
  if (cache[file]) return cache[file];
 
  const res = await fetch(file);
+ if (!res.ok) throw new Error(`Failed to load ${file}: ${res.status}`);
  const csv = await res.text();
 
  const lines = csv.trim().split("\n");
