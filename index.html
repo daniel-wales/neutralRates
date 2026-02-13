@@ -28,15 +28,28 @@
 </div>
 
 <!-- 🔹 Tab contents -->
-
 <!-- 1️⃣ Economic Data Tab -->
 <div id="tab-economic" class="tab-content">
   <div class="controls">
-    <label>Countries:</label><br>
-    <select id="countrySelect" multiple size="3"></select>
+    <div class="control-group">
+      <label for="countrySelect">Country:</label><br>
+      <select id="countrySelect">
+        <option value="bra_Data.csv" selected>Brazil</option>
+        <option value="usa_Data.csv">United States</option>
+        <option value="ind_Data.csv">India</option>
+        <!-- Add other countries as needed -->
+      </select>
+    </div>
 
-    <label>Variables:</label><br>
-    <select id="variableSelect" multiple size="3"></select>
+    <div class="control-group">
+      <label for="variableSelect">Variable:</label><br>
+      <select id="variableSelect">
+        <option value="ii Rate" selected>Nominal Interest Rate</option>
+        <option value="CPI Level">Price Level</option>
+        <option value="GDP YoY">GDP Growth (YoY)</option>
+        <!-- Add other variables as needed -->
+      </select>
+    </div>
 
     <div class="buttons">
       <button id="downloadPNG">Download PNG</button>
