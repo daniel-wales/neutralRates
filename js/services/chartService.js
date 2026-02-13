@@ -7,9 +7,13 @@ if (window.ChartZoom) {
 
 let chart = null;
 
-export function renderChart(ctx, datasets, labels) {
+export function renderChart(ctx, datasets, labels, yAxisLabel = "") {
   if (chart) chart.destroy();
-
+title: {
+  display: true,
+  text: yAxisLabel,
+  color: "#000000"
+}
   chart = new Chart(ctx, {
     type: "line",
     data: { labels, datasets },
