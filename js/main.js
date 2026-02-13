@@ -126,16 +126,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const data = await fetchData(`results/${country}`);
 
-    const dataset = {
-      label: variable,
-      data: data.series[variable],
-      borderColor: "#1f77b4",
-      tension: 0.2,
-      spanGaps: true
-    };
-
-    renderChart(interestCtx, [dataset], data.dates, variable);
-    lastInterestData = { labels: data.dates, datasets: [dataset], yAxisLabel: variable };
     const datasets = [];
     if (variable === "rstar_lw") {
       datasets.push({
@@ -172,10 +162,10 @@ document.addEventListener("DOMContentLoaded", () => {
   countrySelect.addEventListener("change", updateChart);
   variableSelect.addEventListener("change", updateChart);
   document.querySelectorAll("input[name='mode']").forEach(r => r.addEventListener("change", updateChart));
-  downloadPNGBtn.addEventListener("click", () => downloadPNG(getChartInstance()));
+  downloadPNGBtn.addEventListener("click", () => downloadPNG(getChartInstance(ctx)));
   exportCSVBtn.addEventListener("click", () => exportCSV(lastRenderedData));
   document.getElementById("resetZoom").addEventListener("click", () => {
-    const chart = getChartInstance();
+    const chart = getChartInstance(ctx);
     if (chart) chart.resetZoom();
   });
 
@@ -184,10 +174,10 @@ document.addEventListener("DOMContentLoaded", () => {
   // ---------------------
   interestCountrySelect.addEventListener("change", updateInterestChart);
   interestVariableSelect.addEventListener("change", updateInterestChart);
-  downloadInterestPNG.addEventListener("click", () => downloadPNG(getChartInstance()));
+  downloadInterestPNG.addEventListener("click", () => downloadPNG(getChartInstance(interestCtx)));
   exportInterestCSV.addEventListener("click", () => exportCSV(lastInterestData));
   document.getElementById("resetInterestZoom").addEventListener("click", () => {
-    const chart = getChartInstance();
+    const chart = getChartInstance(interestCtx);
     if (chart) chart.resetZoom();
   });
 
@@ -201,6 +191,9 @@ document.addEventListener("DOMContentLoaded", () => {
       document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
       document.getElementById('tab-' + target).style.display = 'block';
       button.classList.add('active');
+
+      if (target === 'economic') updateChart();
+      if (target === 'interest') updateInterestChart();
     });
   });
 

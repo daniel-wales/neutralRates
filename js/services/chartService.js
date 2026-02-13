@@ -5,12 +5,14 @@ if (window.ChartZoom) {
   Chart.register(window.ChartZoom);
 }
 
-let chart = null;
+const chartsByCanvas = new WeakMap();
+let activeChart = null;
 
 export function renderChart(ctx, datasets, labels, yAxisLabel = "") {
-  if (chart) chart.destroy();
+  const existingChart = chartsByCanvas.get(ctx);
+  if (existingChart) existingChart.destroy();
 
-  chart = new Chart(ctx, {
+  const chart = new Chart(ctx, {
     type: "line",
     data: { labels, datasets },
     options: {
@@ -119,6 +121,9 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "") {
     }
   });
 
+  chartsByCanvas.set(ctx, chart);
+  activeChart = chart;
+
   return chart;
 }
 
@@ -127,6 +132,7 @@ export function getColors(index) {
   return colors[index % colors.length];
 }
 
-export function getChartInstance() {
-  return chart;
+export function getChartInstance(ctx = null) {
+  if (ctx) return chartsByCanvas.get(ctx) || null;
+  return activeChart;
 }
