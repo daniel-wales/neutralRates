@@ -2,7 +2,7 @@ import { fetchData } from "./services/dataService.js";
 import { renderChart, getColors, getChartInstance } from "./services/chartService.js";
 import { downloadPNG, exportCSV } from "./services/exportService.js";
 import { variableConfig } from "./config/variables.js";
-import { countryCatalog, countryPresets, getCountryFile } from "./config/countries.js";
+import { countryCatalog, countryPresets, regionMedianGroups, getCountryFile } from "./config/countries.js";
 
 document.addEventListener("DOMContentLoaded", () => {
   const economicConfig = {
@@ -72,6 +72,37 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+
+  const countryByCode = new Map(countryCatalog.map(country => [country.code, country]));
+
+  function computeMedian(values) {
+    const numericValues = values.filter(Number.isFinite).sort((a, b) => a - b);
+    if (!numericValues.length) return null;
+
+    const middle = Math.floor(numericValues.length / 2);
+    if (numericValues.length % 2) return numericValues[middle];
+    return (numericValues[middle - 1] + numericValues[middle]) / 2;
+  }
+
+  function getSelectionDescriptor(selection, sectionConfig) {
+    if (!selection.startsWith("median:")) return { type: "country", file: selection, label: selection };
+
+    const groupCode = selection.replace("median:", "");
+    const group = regionMedianGroups.find(item => item.code === groupCode);
+    if (!group) return { type: "country", file: selection, label: selection };
+
+    const memberFiles = group.members
+      .map(code => countryByCode.get(code))
+      .filter(Boolean)
+      .map(country => getCountryFile(country, sectionConfig.id));
+
+    return {
+      type: "median",
+      label: group.name,
+      memberFiles
+    };
+  }
+
   function getAxisLimitsForPercentChart(isPercentChart, labels, datasets) {
     if (!isPercentChart) return {};
 
@@ -86,8 +117,40 @@ document.addEventListener("DOMContentLoaded", () => {
     let labels = [];
     let colorIndex = 0;
 
-    for (const file of selectedCountries) {
-      const data = await fetchData(`${sectionConfig.sourcePath}/${file}`);
+    for (const selection of selectedCountries) {
+      const descriptor = getSelectionDescriptor(selection, sectionConfig);
+
+      if (descriptor.type === "median") {
+        const memberData = await Promise.all(
+          descriptor.memberFiles.map(file => fetchData(`${sectionConfig.sourcePath}/${file}`))
+        );
+
+        if (!memberData.length) continue;
+        if (!labels.length) labels = memberData[0].dates;
+
+        for (const variable of selectedVariables) {
+          const configItems = variableConfig[variable] || [];
+
+          configItems.forEach(item => {
+            const points = labels.map((_, index) =>
+              computeMedian(memberData.map(data => data.series[item.key]?.[index]))
+            );
+
+            datasets.push({
+              label: `${descriptor.label} - ${variableConfig[variable][0].label}`,
+              data: points,
+              borderColor: getColors(colorIndex++),
+              tension: 0.2,
+              spanGaps: true,
+              borderDash: [6, 4]
+            });
+          });
+        }
+
+        continue;
+      }
+
+      const data = await fetchData(`${sectionConfig.sourcePath}/${descriptor.file}`);
       if (!labels.length) labels = data.dates;
 
       for (const variable of selectedVariables) {
@@ -95,7 +158,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
         configItems.forEach(item => {
           datasets.push({
-            label: sectionConfig.formatLabel(file, variable),
+            label: sectionConfig.formatLabel(descriptor.file, variable),
             data: data.series[item.key],
             borderColor: getColors(colorIndex++),
             tension: 0.2,
@@ -142,6 +205,20 @@ document.addEventListener("DOMContentLoaded", () => {
 
     select.innerHTML = "";
     countryMetadataBySection[sectionId].clear();
+
+    const medianOptgroup = document.createElement("optgroup");
+    medianOptgroup.label = "Regional medians";
+
+    regionMedianGroups.forEach(group => {
+      const value = `median:${group.code}`;
+      const option = document.createElement("option");
+      option.value = value;
+      option.textContent = group.name;
+      option.selected = selectedValues.has(value);
+      medianOptgroup.appendChild(option);
+    });
+
+    select.appendChild(medianOptgroup);
 
     Object.keys(grouped).forEach(region => {
       const optgroup = document.createElement("optgroup");

@@ -51,6 +51,34 @@ export const countryPresets = {
   CLEAR: []
 };
 
+export const regionMedianGroups = [
+  {
+    code: "AFR",
+    name: "Median - AFR (Africa)",
+    members: countryCatalog.filter(country => country.group === "Africa").map(country => country.code)
+  },
+  {
+    code: "APD",
+    name: "Median - APD (Asia and Pacific)",
+    members: countryCatalog.filter(country => country.group === "Asia and Pacific").map(country => country.code)
+  },
+  {
+    code: "EUR",
+    name: "Median - EUR (Europe)",
+    members: countryCatalog.filter(country => country.group === "Europe").map(country => country.code)
+  },
+  {
+    code: "MCD",
+    name: "Median - MCD (Middle East and Central Asia)",
+    members: countryCatalog.filter(country => country.group === "Middle East and Central Asia").map(country => country.code)
+  },
+  {
+    code: "WHD",
+    name: "Median - WHD (Western Hemisphere)",
+    members: countryCatalog.filter(country => country.group === "Western Hemisphere").map(country => country.code)
+  }
+];
+
 function getOutputCode(country) {
   return country.outputCode || country.code;
 }
