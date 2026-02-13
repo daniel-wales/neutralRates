@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
     downloadButtonId: "downloadInterestPNG",
     exportButtonId: "exportInterestCSV",
     defaultCountries: ["usa"],
-    formatLabel: (file, variable) => `${file.replace("rstar_HLW_SV_", "").replace(".csv", "")} - ${variable}`
+    formatLabel: (file, variable) => `${file.replace("rstar_HLW_SV_", "").replace(".csv", "")} - ${variableConfig[variable]?.[0]?.label ?? variable}`
   };
 
   const parameterConfig = {
@@ -88,12 +88,37 @@ document.addEventListener("DOMContentLoaded", () => {
   const countryByCode = new Map(countryCatalog.map(country => [country.code, country]));
 
   function computeMedian(values) {
-    const numericValues = values.filter(Number.isFinite).sort((a, b) => a - b);
+    const numericValues = values
+      .map(value => (value == null ? Number.NaN : Number(value)))
+      .filter(Number.isFinite)
+      .sort((a, b) => a - b);
+
     if (!numericValues.length) return null;
 
     const middle = Math.floor(numericValues.length / 2);
     if (numericValues.length % 2) return numericValues[middle];
     return (numericValues[middle - 1] + numericValues[middle]) / 2;
+  }
+
+  function computeOutputGap(outputLevel, trendOutputLevel) {
+    if (!Number.isFinite(outputLevel) || !Number.isFinite(trendOutputLevel) || outputLevel <= 0 || trendOutputLevel <= 0) {
+      return null;
+    }
+
+    const gap = (Math.log(outputLevel) - Math.log(trendOutputLevel)) * 100;
+    return Number.isFinite(gap) ? gap : null;
+  }
+
+  function getSeriesValue(data, key, index) {
+    if (key === "output_gap_lw") {
+      return computeOutputGap(data.series.yobs?.[index], data.series.ybar_lw?.[index]);
+    }
+
+    if (key === "output_gap_int") {
+      return computeOutputGap(data.series.yobs?.[index], data.series.ybar_lw_int?.[index]);
+    }
+
+    return data.series[key]?.[index] ?? null;
   }
 
   function getSelectionDescriptor(selection, sectionConfig) {
@@ -145,7 +170,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
           configItems.forEach(item => {
             const points = labels.map((_, index) =>
-              computeMedian(memberData.map(data => data.series[item.key]?.[index]))
+              computeMedian(memberData.map(data => getSeriesValue(data, item.key, index)))
             );
 
             datasets.push({
@@ -171,7 +196,7 @@ document.addEventListener("DOMContentLoaded", () => {
         configItems.forEach(item => {
           datasets.push({
             label: sectionConfig.formatLabel(descriptor.file, variable),
-            data: data.series[item.key],
+            data: labels.map((_, index) => getSeriesValue(data, item.key, index)),
             borderColor: getColors(colorIndex++),
             tension: 0.2,
             spanGaps: true
