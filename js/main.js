@@ -109,3 +109,20 @@ document.getElementById("resetZoom").addEventListener("click", () => {
   const chart = getChartInstance();
   if (chart) chart.resetZoom();
 });
+
+// Tab switching
+document.querySelectorAll('.tab-button').forEach(button => {
+  button.addEventListener('click', () => {
+    const target = button.dataset.tab;
+
+    // Hide all tab contents
+    document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+
+    // Remove active class from all buttons
+    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+
+    // Show the selected tab
+    document.getElementById('tab-' + target).style.display = 'block';
+    button.classList.add('active');
+  });
+});
