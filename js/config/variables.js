@@ -61,6 +61,49 @@ export const variableConfig = {
     unit: "percent",
     yAxisLabel: "Percent"
   }],
+
+  "piobs": [{
+    key: "piobs",
+    label: "Observed Inflation",
+    unit: "percent",
+    yAxisLabel: "Percent"
+  }],
+
+  "yobs": [{
+    key: "yobs",
+    label: "Output Level",
+    unit: "index",
+    yAxisLabel: "Index"
+  }],
+
+  "ybar_lw": [{
+    key: "ybar_lw",
+    label: "Trend Output Level (LW)",
+    unit: "index",
+    yAxisLabel: "Index"
+  }],
+
+  "rstar_lw_int": [{
+    key: "rstar_lw_int",
+    label: "r star (INT)",
+    unit: "percent",
+    yAxisLabel: "Percent"
+  }],
+
+  "ybar_lw_int": [{
+    key: "ybar_lw_int",
+    label: "Trend Output Level (INT)",
+    unit: "index",
+    yAxisLabel: "Index"
+  }],
+
+  "gg_home_int": [{
+    key: "gg_home_int",
+    label: "g star (INT)",
+    unit: "percent",
+    yAxisLabel: "Percent"
+  }],
+
   "rrobs": [{
     key: "rrobs",
     label: "Observed Real Rate",
