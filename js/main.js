@@ -55,7 +55,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (mode === "countries") {
       const variable = selectedVariables[0];
       for (const file of selectedCountries) {
-        const data = await fetchData(file);
+        const data = await fetchData(`data/${file}`);
         if (!labels.length) labels = data.dates;
         const config = variableConfig[variable];
         config.forEach(item => {
@@ -72,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 2️⃣ Compare Variables mode
     else if (mode === "variables") {
       const file = selectedCountries[0];
-      const data = await fetchData(file);
+      const data = await fetchData(`data/${file}`);
       labels = data.dates;
       for (const variable of selectedVariables) {
         const config = variableConfig[variable];
@@ -90,7 +90,7 @@ document.addEventListener("DOMContentLoaded", () => {
     // 3️⃣ Mixed mode
     else if (mode === "mixed") {
       for (const file of selectedCountries) {
-        const data = await fetchData(file);
+        const data = await fetchData(`data/${file}`);
         if (!labels.length) labels = data.dates;
         for (const variable of selectedVariables) {
           const config = variableConfig[variable];
@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const variable = interestVariableSelect.value;
     if (!country || !variable) return;
 
-    const data = await fetchData(country); // new CSVs for interest rates
+    const data = await fetchData(`results/${file}`);
 
     const dataset = {
       label: variable,
