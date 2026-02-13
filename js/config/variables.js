@@ -46,14 +46,14 @@ export const variableConfig = {
     label: "Real GDP Level",
     unit: "index",
     yAxisLabel: "Index"
-  }]
+  }],
 
   "rstar_lw": [{
     key: "rstar_lw",
     label: "r star (LW)",
     unit: "percent",
     yAxisLabel: "Percent"
-  }]
+  }],
 
   "gg_home": [{
     key: "gg_home",
