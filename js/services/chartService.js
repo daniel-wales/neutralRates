@@ -22,7 +22,7 @@ const sourceLabelPlugin = {
     ctx.font = "11px Arial";
     ctx.textAlign = "right";
     ctx.textBaseline = "bottom";
-    ctx.fillText(sourceText, right, bottom + 28);
+    ctx.fillText(sourceText, right, bottom + 34);
     ctx.restore();
   }
 };
@@ -39,7 +39,7 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits =
       maintainAspectRatio: false,
       layout: {
         padding: {
-          bottom: 36
+          bottom: 44
         }
       },
 
@@ -134,7 +134,8 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits =
           min: axisLimits.y?.min,
           max: axisLimits.y?.max,
           ticks: {
-            color: "#000000"
+            color: "#000000",
+            callback: (value) => Number(value).toLocaleString(undefined, { maximumFractionDigits: 1 })
           },
           grid: {
             color: "#e0e0e0",
