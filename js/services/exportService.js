@@ -1,27 +1,63 @@
-export function downloadPNG(chart, filename="chart.png") {
+import { getChartInstance } from "./chartService.js";
+
+export function exportCSV() {
+  const chart = getChartInstance();
   if (!chart) return;
+
+  const labels = chart.data.labels;
+  const datasets = chart.data.datasets;
+
+  let csvContent = "Date";
+
+  // Add dataset headers
+  datasets.forEach(ds => {
+    csvContent += `,${ds.label}`;
+  });
+
+  csvContent += "\n";
+
+  // Add rows
+  labels.forEach((label, i) => {
+    let row = label;
+    datasets.forEach(ds => {
+      row += `,${ds.data[i] ?? ""}`;
+    });
+    csvContent += row + "\n";
+  });
+
+  // Create downloadable file
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
   const link = document.createElement("a");
-  link.download = filename;
-  link.href = chart.toBase64Image();
+  link.href = url;
+  link.download = "chart-data.csv";
   link.click();
+
+  URL.revokeObjectURL(url);
 }
 
-export function exportCSV(data, filename="export.csv") {
-  if (!data) return;
+export function downloadPNG() {
+  const chart = getChartInstance();
+  if (!chart) return;
 
-  const { dates, datasets } = data;
+  const canvas = chart.canvas;
+  const ctx = canvas.getContext("2d");
 
-  let csv = "Date," + datasets.map(d => d.label).join(",") + "\n";
+  // Save current state
+  ctx.save();
 
-  for (let i = 0; i < dates.length; i++) {
-    const row = [dates[i]];
-    datasets.forEach(ds => row.push(ds.data[i] ?? ""));
-    csv += row.join(",") + "\n";
-  }
+  // Draw white background behind chart
+  ctx.globalCompositeOperation = "destination-over";
+  ctx.fillStyle = "#ffffff";
+  ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-  const blob = new Blob([csv], { type: "text/csv" });
+  // Export image
   const link = document.createElement("a");
-  link.href = URL.createObjectURL(blob);
-  link.download = filename;
+  link.download = "chart.png";
+  link.href = canvas.toDataURL("image/png");
   link.click();
+
+  // Restore
+  ctx.restore();
 }
