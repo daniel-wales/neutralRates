@@ -9,9 +9,20 @@ body {
   margin: 0;
 }
 
-h2 {
+h1 {
+  margin: 0;
+  font-weight: 700;
+  font-size: 28px;
+}
+
+.page-header {
   margin-bottom: 20px;
-  font-weight: 600;
+}
+
+.page-subtitle {
+  margin: 8px 0 0;
+  color: #5f7285;
+  font-size: 15px;
 }
 
 /* Mode toggle (if used) */
@@ -125,6 +136,20 @@ h2 {
   gap: 5px; /* spacing between label and select */
 }
 
+.status-message {
+  min-height: 20px;
+  margin: 0;
+  color: #5f7285;
+  font-size: 13px;
+}
+
+.control-hint {
+  margin: 0;
+  font-size: 12px;
+  color: #5f7285;
+  line-height: 1.4;
+}
+
 /* Select dropdowns */
 select {
   padding: 8px 12px;
@@ -163,7 +188,7 @@ button:hover {
 }
 
 .tab-button {
-  padding: 8px 14px;
+  padding: 10px 14px;
   border: none;
   border-radius: 6px;
   background: #dfe6ed;
@@ -228,6 +253,10 @@ button:hover {
 
   body {
     padding: 15px;
+  }
+
+  h1 {
+    font-size: 24px;
   }
 
   .controls {
