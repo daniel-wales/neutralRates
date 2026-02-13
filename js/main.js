@@ -5,6 +5,7 @@ import { variableConfig } from "./config/variables.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 
+  // 🔹 Elements for Economic Data tab
   const countrySelect = document.getElementById("countrySelect");
   const variableSelect = document.getElementById("variableSelect");
   const downloadPNGBtn = document.getElementById("downloadPNG");
@@ -13,14 +14,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let lastRenderedData = null;
 
+  // ---------------------
+  // 🔹 Helpers
+  // ---------------------
   function getMode() {
-    return document.querySelector("input[name='mode']:checked").value;
+    const modeInput = document.querySelector("input[name='mode']");
+    return modeInput ? modeInput.value : "countries"; // fallback
   }
 
   function getSelected(select) {
     return Array.from(select.selectedOptions).map(o => o.value);
   }
 
+  // ---------------------
+  // 🔹 Update Chart
+  // ---------------------
   async function updateChart() {
     const mode = getMode();
     const selectedCountries = getSelected(countrySelect);
@@ -32,9 +40,9 @@ document.addEventListener("DOMContentLoaded", () => {
     let labels = [];
     let colorIndex = 0;
 
+    // Compare Countries mode
     if (mode === "countries") {
       const variable = selectedVariables[0];
-
       for (const file of selectedCountries) {
         const data = await fetchData(file);
         if (!labels.length) labels = data.dates;
@@ -50,8 +58,7 @@ document.addEventListener("DOMContentLoaded", () => {
           });
         });
       }
-
-    } else { // compare variables
+    } else { // Compare Variables mode
       const file = selectedCountries[0];
       const data = await fetchData(file);
       labels = data.dates;
@@ -70,24 +77,23 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
+    // Determine y-axis label
     const units = selectedVariables.map(v => variableConfig[v][0].unit);
     const uniqueUnits = [...new Set(units)];
-    
     let yAxisLabel = "";
-    
     if (uniqueUnits.length === 1) {
-      // All selected variables share same unit
       yAxisLabel = variableConfig[selectedVariables[0]][0].yAxisLabel;
     } else {
-      // Mixed units selected
       yAxisLabel = "Value";
     }
-        
+
     renderChart(ctx, datasets, labels, yAxisLabel);
-    lastRenderedData = { labels, datasets, yAxisLabel};
+    lastRenderedData = { labels, datasets, yAxisLabel };
   }
 
-  // Event listeners
+  // ---------------------
+  // 🔹 Event Listeners for Chart
+  // ---------------------
   countrySelect.addEventListener("change", updateChart);
   variableSelect.addEventListener("change", updateChart);
   document.querySelectorAll("input[name='mode']")
@@ -101,28 +107,32 @@ document.addEventListener("DOMContentLoaded", () => {
     exportCSV(lastRenderedData);
   });
 
-  // Initial render
-  updateChart();
-});
-
-document.getElementById("resetZoom").addEventListener("click", () => {
-  const chart = getChartInstance();
-  if (chart) chart.resetZoom();
-});
-
-// Tab switching
-document.querySelectorAll('.tab-button').forEach(button => {
-  button.addEventListener('click', () => {
-    const target = button.dataset.tab;
-
-    // Hide all tab contents
-    document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
-
-    // Remove active class from all buttons
-    document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-
-    // Show the selected tab
-    document.getElementById('tab-' + target).style.display = 'block';
-    button.classList.add('active');
+  document.getElementById("resetZoom").addEventListener("click", () => {
+    const chart = getChartInstance();
+    if (chart) chart.resetZoom();
   });
+
+  // ---------------------
+  // 🔹 Tab Switching
+  // ---------------------
+  document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', () => {
+      const target = button.dataset.tab;
+
+      // Hide all tab contents
+      document.querySelectorAll('.tab-content').forEach(tab => tab.style.display = 'none');
+
+      // Remove active class from all buttons
+      document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+
+      // Show the selected tab
+      document.getElementById('tab-' + target).style.display = 'block';
+      button.classList.add('active');
+    });
+  });
+
+  // ---------------------
+  // 🔹 Initial Render
+  // ---------------------
+  updateChart();
 });
