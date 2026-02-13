@@ -97,6 +97,20 @@ export const variableConfig = {
     yAxisLabel: "Index"
   }],
 
+  "output_gap_lw": [{
+    key: "output_gap_lw",
+    label: "Output Gap (LW)",
+    unit: "percent",
+    yAxisLabel: "Percent"
+  }],
+
+  "output_gap_int": [{
+    key: "output_gap_int",
+    label: "Output Gap (INT)",
+    unit: "percent",
+    yAxisLabel: "Percent"
+  }],
+
   "gg_home_int": [{
     key: "gg_home_int",
     label: "g star (INT)",
