@@ -31,32 +31,96 @@
 <!-- 1️⃣ Economic Data Tab -->
 <div id="tab-economic" class="tab-content">
   <div class="controls">
-    <div class="control-group">
-      <label for="countrySelect">Country:</label><br>
-      <select id="countrySelect">
-        <option value="bra_Data.csv" selected>Brazil</option>
-        <option value="usa_Data.csv">United States</option>
+
+  <!-- 🔹 Countries (multi-select with groups) -->
+  <div class="control-group">
+    <label for="countrySelect">Countries:</label><br>
+    <select id="countrySelect" multiple size="10">
+      
+      <!-- Africa -->
+      <optgroup label="Africa">
+        <option value="egy_Data.csv">Egypt</option>
+        <option value="nga_Data.csv">Nigeria</option>
+        <option value="zaf_Data.csv">South Africa</option>
+      </optgroup>
+
+      <!-- Asia and Pacific -->
+      <optgroup label="Asia and Pacific">
+        <option value="bgd_Data.csv">Bangladesh</option>
+        <option value="idn_Data.csv">Indonesia</option>
         <option value="ind_Data.csv">India</option>
-        <!-- Add other countries as needed -->
-      </select>
-    </div>
+        <option value="jpn_Data.csv">Japan</option>
+        <option value="kor_Data.csv">South Korea</option>
+        <option value="mys_Data.csv">Malaysia</option>
+        <option value="phl_Data.csv">Philippines</option>
+        <option value="tha_Data.csv">Thailand</option>
+        <option value="vnm_Data.csv">Vietnam</option>
+        <option value="aus_Data.csv">Australia</option>
+        <option value="nzl_Data.csv">New Zealand</option>
+      </optgroup>
 
-    <div class="control-group">
-      <label for="variableSelect">Variable:</label><br>
-      <select id="variableSelect">
-        <option value="ii Rate" selected>Nominal Interest Rate</option>
-        <option value="CPI Level">Price Level</option>
-        <option value="GDP YoY">GDP Growth (YoY)</option>
-        <!-- Add other variables as needed -->
-      </select>
-    </div>
+      <!-- Europe -->
+      <optgroup label="Europe">
+        <option value="blr_Data.csv">Belarus</option>
+        <option value="cze_Data.csv">Czech Republic</option>
+        <option value="gbr_Data.csv">United Kingdom</option>
+        <option value="hun_Data.csv">Hungary</option>
+        <option value="nor_Data.csv">Norway</option>
+        <option value="pol_Data.csv">Poland</option>
+        <option value="rou_Data.csv">Romania</option>
+        <option value="rus_Data.csv">Russia</option>
+        <option value="srb_Data.csv">Serbia</option>
+        <option value="swe_Data.csv">Sweden</option>
+      </optgroup>
 
-    <div class="buttons">
-      <button id="downloadPNG">Download PNG</button>
-      <button id="exportCSV">Export CSV</button>
-      <button id="resetZoom">Reset Zoom</button>
-    </div>
+      <!-- Middle East and Central Asia -->
+      <optgroup label="Middle East and Central Asia">
+        <option value="isr_Data.csv">Israel</option>
+        <option value="pak_Data.csv">Pakistan</option>
+        <option value="tur_Data.csv">Turkey</option>
+      </optgroup>
+
+      <!-- Western Hemisphere -->
+      <optgroup label="Western Hemisphere">
+        <option value="bra_Data.csv">Brazil</option>
+        <option value="can_Data.csv">Canada</option>
+        <option value="chl_Data.csv">Chile</option>
+        <option value="col_Data.csv">Colombia</option>
+        <option value="cri_Data.csv">Costa Rica</option>
+        <option value="dom_Data.csv">Dominican Republic</option>
+        <option value="gtm_Data.csv">Guatemala</option>
+        <option value="mex_Data.csv">Mexico</option>
+        <option value="per_Data.csv">Peru</option>
+        <option value="pry_Data.csv">Paraguay</option>
+        <option value="ury_Data.csv">Uruguay</option>
+        <option value="usa_Data.csv" selected>United States</option>
+      </optgroup>
+
+    </select>
   </div>
+
+  <!-- 🔹 Variables (multi-select) -->
+  <div class="control-group">
+    <label for="variableSelect">Variables:</label><br>
+    <select id="variableSelect" multiple size="5">
+      <option value="ii Rate" selected>Nominal Interest Rate</option>
+      <option value="CPI QoQ Ann">Inflation (QoQ Ann)</option>
+      <option value="CPI YoY">Inflation (YoY)</option>
+      <option value="CPI Level">Price Level</option>
+      <option value="GDP QoQ Ann">GDP Growth (QoQ Ann)</option>
+      <option value="GDP YoY">GDP Growth (YoY)</option>
+      <option value="Real GDP Level">Real GDP Level</option>
+    </select>
+  </div>
+
+  <!-- 🔹 Buttons -->
+  <div class="buttons">
+    <button id="downloadPNG">Download PNG</button>
+    <button id="exportCSV">Export CSV</button>
+    <button id="resetZoom">Reset Zoom</button>
+  </div>
+
+</div>
 
   <canvas id="myChart" height="300"></canvas>
 </div>
