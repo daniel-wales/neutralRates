@@ -1,3 +1,6 @@
+/**
+ * Country metadata and preset selections used across dashboard sections.
+ */
 export const countryCatalog = [
   { code: "egy", name: "Egypt", group: "Africa" },
   { code: "nga", name: "Nigeria", group: "Africa" },
@@ -46,7 +49,7 @@ export const countryCatalog = [
 
 export const countryPresets = {
   US: ["usa"],
-  G7: ["usa", "can", "gbr", "jpn"],
+  G7: ["usa", "can", "gbr", "jpn"], // Intentional subset of available G7 members in this dataset.
   EM_ASIA: ["bgd", "idn", "ind", "mys", "phl", "tha", "vnm"],
   CLEAR: []
 };

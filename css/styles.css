@@ -111,19 +111,12 @@ h1 {
   text-align: left;
 }
 
-.chart-container {
-  margin: 0;
-  max-width: 100%;
-}
-
-
 #tab-economic .main-panel .chart-container,
 #tab-interest .main-panel .chart-container {
   max-width: 960px;
 }
 
 #tab-parameters .chart-container {
-  margin: 0;
   max-width: 960px;
 }
 
@@ -217,6 +210,17 @@ button:hover {
   background: #174b78;
 }
 
+button:focus-visible,
+select:focus-visible,
+input[type="search"]:focus-visible {
+  outline: 3px solid #f39c12;
+  outline-offset: 2px;
+}
+
+.tab-button:focus-visible {
+  box-shadow: 0 0 0 3px rgba(243, 156, 18, 0.35);
+}
+
 /* ========================= */
 /* 🔹 Tabs */
 /* ========================= */
@@ -251,7 +255,9 @@ button:hover {
 .chart-container {
   position: relative;
   width: 100%;
-  height: 350px;       /* chart height */
+  height: 350px;
+  margin: 0;
+  max-width: 100%;
 }
 
 .chart-container canvas {
@@ -261,28 +267,6 @@ button:hover {
   box-shadow: 0 10px 24px rgba(31, 95, 153, 0.12);
   width: 100%;
   height: 100%;
-}
-
-/* ========================= */
-/* 🔹 Tables (Parameters tab) */
-/* ========================= */
-#parametersTable {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 20px;
-  font-size: 14px;
-}
-
-#parametersTable th,
-#parametersTable td {
-  border: 1px solid #b8c8d9;
-  padding: 8px 12px;
-  text-align: left;
-}
-
-#parametersTable th {
-  background-color: #e6eff8;
-  font-weight: 600;
 }
 
 /* ========================= */
