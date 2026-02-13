@@ -76,6 +76,13 @@ export const variableConfig = {
     yAxisLabel: "Index"
   }],
 
+  "observed_growth_rate_yoy": [{
+    key: "observed_growth_rate_yoy",
+    label: "Observed Growth Rate YoY",
+    unit: "percent",
+    yAxisLabel: "Percent"
+  }],
+
   "ybar_lw": [{
     key: "ybar_lw",
     label: "Trend Output Level (LW)",

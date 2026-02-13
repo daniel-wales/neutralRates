@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resetButtonId: "resetZoom",
     downloadButtonId: "downloadPNG",
     exportButtonId: "exportCSV",
-    defaultCountries: ["usa"],
+    defaultSelections: ["median:WORLD"],
     formatLabel: (file, variable) => `${file.replace("_Data.csv", "")} - ${variableConfig[variable][0].label}`
   };
 
@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resetButtonId: "resetInterestZoom",
     downloadButtonId: "downloadInterestPNG",
     exportButtonId: "exportInterestCSV",
-    defaultCountries: ["usa"],
+    defaultSelections: ["median:WORLD"],
     formatLabel: (file, variable) => `${file.replace("rstar_HLW_SV_", "").replace(".csv", "")} - ${variableConfig[variable]?.[0]?.label ?? variable}`
   };
 
@@ -117,7 +117,40 @@ document.addEventListener("DOMContentLoaded", () => {
       return computeOutputGap(data.series.yobs?.[index], data.series.ybar_lw_int?.[index]);
     }
 
+    if (key === "observed_growth_rate_yoy") {
+      const currentDate = data.dates?.[index];
+      if (!currentDate) return null;
+
+      const [year, month] = currentDate.split("-");
+      const previousYearDate = `${Number(year) - 1}-${month}`;
+      const dateIndexMap = data.dateIndexMap || new Map(data.dates.map((date, idx) => [date, idx]));
+      const previousIndex = dateIndexMap.get(previousYearDate);
+
+      if (previousIndex == null) return null;
+
+      const outputLevelNow = data.series.yobs?.[index];
+      const outputLevelPast = data.series.yobs?.[previousIndex];
+
+      if (!Number.isFinite(outputLevelNow) || !Number.isFinite(outputLevelPast) || outputLevelNow <= 0 || outputLevelPast <= 0) {
+        return null;
+      }
+
+      const growth = (Math.log(outputLevelNow) - Math.log(outputLevelPast)) * 100;
+      return Number.isFinite(growth) ? growth : null;
+    }
+
     return data.series[key]?.[index] ?? null;
+  }
+
+  function getDateLabels(dataItems) {
+    const allDates = [...new Set(dataItems.flatMap(data => data.dates || []))];
+    return allDates.sort();
+  }
+
+  function getSeriesValueByDate(data, key, date) {
+    const index = data.dateIndexMap?.get(date);
+    if (index == null) return null;
+    return getSeriesValue(data, key, index);
   }
 
   function getSelectionDescriptor(selection, sectionConfig) {
@@ -152,8 +185,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   async function buildDatasets(selectedCountries, selectedVariables, sectionConfig) {
     const datasets = [];
-    let labels = [];
     let colorIndex = 0;
+    const selections = [];
 
     for (const selection of selectedCountries) {
       const descriptor = getSelectionDescriptor(selection, sectionConfig);
@@ -163,19 +196,35 @@ document.addEventListener("DOMContentLoaded", () => {
           descriptor.memberFiles.map(file => fetchData(`${sectionConfig.sourcePath}/${file}`))
         );
 
-        if (!memberData.length) continue;
-        if (!labels.length) labels = memberData[0].dates;
+        memberData.forEach(data => {
+          if (!data.dateIndexMap) data.dateIndexMap = new Map(data.dates.map((date, idx) => [date, idx]));
+        });
 
+        selections.push({ type: "median", descriptor, memberData });
+        continue;
+      }
+
+      const data = await fetchData(`${sectionConfig.sourcePath}/${descriptor.file}`);
+      if (!data.dateIndexMap) data.dateIndexMap = new Map(data.dates.map((date, idx) => [date, idx]));
+      selections.push({ type: "country", descriptor, data });
+    }
+
+    const labels = getDateLabels(
+      selections.flatMap(item => (item.type === "median" ? item.memberData : [item.data]))
+    );
+
+    for (const selection of selections) {
+      if (selection.type === "median") {
         for (const variable of selectedVariables) {
           const configItems = variableConfig[variable] || [];
 
           configItems.forEach(item => {
-            const points = labels.map((_, index) =>
-              computeMedian(memberData.map(data => getSeriesValue(data, item.key, index)))
+            const points = labels.map(date =>
+              computeMedian(selection.memberData.map(data => getSeriesValueByDate(data, item.key, date)))
             );
 
             datasets.push({
-              label: `${descriptor.label} - ${variableConfig[variable][0].label}`,
+              label: `${selection.descriptor.label} - ${variableConfig[variable][0].label}`,
               data: points,
               borderColor: getColors(colorIndex++),
               tension: 0.2,
@@ -188,16 +237,13 @@ document.addEventListener("DOMContentLoaded", () => {
         continue;
       }
 
-      const data = await fetchData(`${sectionConfig.sourcePath}/${descriptor.file}`);
-      if (!labels.length) labels = data.dates;
-
       for (const variable of selectedVariables) {
         const configItems = variableConfig[variable] || [];
 
         configItems.forEach(item => {
           datasets.push({
-            label: sectionConfig.formatLabel(descriptor.file, variable),
-            data: labels.map((_, index) => getSeriesValue(data, item.key, index)),
+            label: sectionConfig.formatLabel(selection.descriptor.file, variable),
+            data: labels.map(date => getSeriesValueByDate(selection.data, item.key, date)),
             borderColor: getColors(colorIndex++),
             tension: 0.2,
             spanGaps: true
@@ -208,6 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     return { labels, datasets };
   }
+
 
   function getAxisLabelAndLimits(selectedVariables, labels, datasets) {
     const units = selectedVariables
@@ -314,12 +361,15 @@ document.addEventListener("DOMContentLoaded", () => {
       ? document.getElementById(sectionConfig.presetContainerId)
       : null;
 
-    const defaults = new Set(
-      sectionConfig.defaultCountries
+    const defaults = new Set(sectionConfig.defaultSelections || []);
+
+    if (!defaults.size) {
+      (sectionConfig.defaultCountries || [])
         .map(code => countryCatalog.find(country => country.code === code))
         .filter(Boolean)
         .map(country => getCountryFile(country, sectionConfig.id))
-    );
+        .forEach(file => defaults.add(file));
+    }
 
     buildCountrySelect(select, sectionConfig.id, "", defaults);
 
