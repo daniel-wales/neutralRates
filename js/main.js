@@ -136,6 +136,34 @@ document.addEventListener("DOMContentLoaded", () => {
 
     renderChart(interestCtx, [dataset], data.dates, variable);
     lastInterestData = { labels: data.dates, datasets: [dataset], yAxisLabel: variable };
+    const datasets = [];
+    if (variable === "rstar_lw") {
+      datasets.push({
+        label: "rstar_lw",
+        data: data.series.rstar_lw,
+        borderColor: "#1f77b4",
+        tension: 0.2,
+        spanGaps: true
+      });
+      datasets.push({
+        label: "rrobs",
+        data: data.series.rrobs,
+        borderColor: "#d62728",
+        tension: 0.2,
+        spanGaps: true
+      });
+    } else {
+      datasets.push({
+        label: variable,
+        data: data.series[variable],
+        borderColor: "#1f77b4",
+        tension: 0.2,
+        spanGaps: true
+      });
+    }
+
+    renderChart(interestCtx, datasets, data.dates, variable);
+    lastInterestData = { labels: data.dates, datasets, yAxisLabel: variable };
   }
 
   // ---------------------
