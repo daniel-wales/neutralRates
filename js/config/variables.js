@@ -54,6 +54,13 @@ export const variableConfig = {
     unit: "percent",
     yAxisLabel: "Percent"
   }]
+
+  "gg_home": [{
+    key: "gg_home",
+    label: "g star (LW)",
+    unit: "percent",
+    yAxisLabel: "Percent"
+  }]
 };
 
 export const colors = [
