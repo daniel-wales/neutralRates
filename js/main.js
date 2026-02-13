@@ -41,7 +41,6 @@ document.addEventListener("DOMContentLoaded", () => {
     id: "parameters",
     selectCountryId: "parameterCountrySelect",
     countrySearchId: "parameterCountrySearch",
-    presetContainerId: "parameterPresets",
     canvasId: "parameterChart",
     sourcePath: "tables",
     statusId: "parameterStatus",
@@ -128,7 +127,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const group = regionMedianGroups.find(item => item.code === groupCode);
     if (!group) return { type: "country", file: selection, label: selection };
 
+    const supportedCodes = new Set(sectionSupportedCountryCodes[sectionConfig.id] || []);
     const memberFiles = group.members
+      .filter(code => !supportedCodes.size || supportedCodes.has(code))
       .map(code => countryByCode.get(code))
       .filter(Boolean)
       .map(country => getCountryFile(country, sectionConfig.id));
@@ -309,7 +310,9 @@ document.addEventListener("DOMContentLoaded", () => {
   function setupCountryControls(sectionConfig, update) {
     const select = document.getElementById(sectionConfig.selectCountryId);
     const searchInput = document.getElementById(sectionConfig.countrySearchId);
-    const presetContainer = document.getElementById(sectionConfig.presetContainerId);
+    const presetContainer = sectionConfig.presetContainerId
+      ? document.getElementById(sectionConfig.presetContainerId)
+      : null;
 
     const defaults = new Set(
       sectionConfig.defaultCountries
@@ -325,11 +328,13 @@ document.addEventListener("DOMContentLoaded", () => {
       buildCountrySelect(select, sectionConfig.id, searchInput.value, selectedValues);
     });
 
-    presetContainer.addEventListener("click", event => {
-      const button = event.target.closest("button[data-preset]");
-      if (!button) return;
-      applyPreset(sectionConfig, button.dataset.preset);
-    });
+    if (presetContainer) {
+      presetContainer.addEventListener("click", event => {
+        const button = event.target.closest("button[data-preset]");
+        if (!button) return;
+        applyPreset(sectionConfig, button.dataset.preset);
+      });
+    }
   }
 
   function setupParameterSection(sectionConfig) {
