@@ -5,7 +5,7 @@ import { variableConfig } from "./config/variables.js";
 
 document.addEventListener("DOMContentLoaded", () => {
 
-  // 🔹 Elements for Economic Data tab
+  // Elements for Economic Data tab
   const countrySelect = document.getElementById("countrySelect");
   const variableSelect = document.getElementById("variableSelect");
   const downloadPNGBtn = document.getElementById("downloadPNG");
@@ -14,6 +14,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let lastRenderedData = null;
 
+  // Elements for Interest Rates tab
+  const interestCountrySelect = document.getElementById("interestCountrySelect");
+  const interestVariableSelect = document.getElementById("interestVariableSelect");
+  const interestCtx = document.getElementById("interestChart");
+  const downloadInterestPNG = document.getElementById("downloadInterestPNG");
+  const exportInterestCSV = document.getElementById("exportInterestCSV");
+
+  let lastInterestData = null;
+  
   // ---------------------
   // 🔹 Helpers
   // ---------------------
