@@ -70,8 +70,21 @@ document.addEventListener("DOMContentLoaded", () => {
       }
     }
 
-    renderChart(ctx, datasets, labels);
-    lastRenderedData = { labels, datasets };
+    const units = selectedVariables.map(v => variableConfig[v][0].unit);
+    const uniqueUnits = [...new Set(units)];
+    
+    let yAxisLabel = "";
+    
+    if (uniqueUnits.length === 1) {
+      // All selected variables share same unit
+      yAxisLabel = variableConfig[selectedVariables[0]][0].yAxisLabel;
+    } else {
+      // Mixed units selected
+      yAxisLabel = "Value";
+    }
+        
+    renderChart(ctx, datasets, labels, yAxisLabel);
+    lastRenderedData = { labels, datasets, yAxisLabel};
   }
 
   // Event listeners
