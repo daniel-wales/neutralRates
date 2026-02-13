@@ -30,7 +30,9 @@
 <!-- 🔹 Tab contents -->
 <!-- 1️⃣ Economic Data Tab -->
 <div id="tab-economic" class="tab-content">
-  <div class="controls">
+  <div class="tab-layout">
+    <div class="side-panel">
+      <div class="controls">
 
   <!-- 🔹 Countries (multi-select with groups) -->
   <div class="control-group">
@@ -114,15 +116,19 @@
   </div>
 
   <!-- 🔹 Buttons -->
-  <div class="buttons">
+  <div class="buttons vertical-buttons">
     <button id="downloadPNG">Download PNG</button>
     <button id="exportCSV">Export CSV</button>
     <button id="resetZoom">Reset Zoom</button>
   </div>
 
-</div>
-  <div class="chart-container">
-    <canvas id="myChart" height="300"></canvas>
+      </div>
+    </div>
+    <div class="main-panel">
+      <div class="chart-container">
+        <canvas id="myChart" height="300"></canvas>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -145,11 +151,12 @@
 
 <!-- 3️⃣ Interest Rates Tab -->
 <div id="tab-interest" class="tab-content" style="display:none;">
-
-  <div class="controls">
-    <div class="control-group">
-      <label for="interestCountrySelect">Country:</label>
-      <select id="interestCountrySelect">
+  <div class="tab-layout">
+    <div class="side-panel">
+      <div class="controls">
+        <div class="control-group">
+          <label for="interestCountrySelect">Country:</label>
+          <select id="interestCountrySelect">
       <optgroup label="Africa">
         <option value="rstar_HLW_SV_egy.csv">Egypt</option>
         <option value="rstar_HLW_SV_nga.csv">Nigeria</option>
@@ -203,27 +210,31 @@
         <option value="rstar_HLW_SV_ury.csv">Uruguay</option>        
         <option value="rstar_HLW_SV_us.csv" selected>United States</option>
       </optgroup>
-    </select>
-  </div>
+          </select>
+        </div>
 
     
-    <div class="control-group">
-      <label for="interestVariableSelect">Variable:</label>
-      <select id="interestVariableSelect">
-        <option value="rstar_lw" selected>r star (LW)</option>
-        <option value="gg_home">g star (LW)</option>
-      </select>
+        <div class="control-group">
+          <label for="interestVariableSelect">Variable:</label>
+          <select id="interestVariableSelect">
+            <option value="rstar_lw" selected>r star (LW)</option>
+            <option value="gg_home">g star (LW)</option>
+          </select>
+        </div>
+
+        <div class="buttons vertical-buttons">
+          <button id="downloadInterestPNG">Download PNG</button>
+          <button id="exportInterestCSV">Export CSV</button>
+          <button id="resetInterestZoom">Reset Zoom</button>
+        </div>
+      </div>
     </div>
 
-    <div class="buttons">
-      <button id="downloadInterestPNG">Download PNG</button>
-      <button id="exportInterestCSV">Export CSV</button>
-      <button id="resetInterestZoom">Reset Zoom</button>
+    <div class="main-panel">
+      <div class="chart-container">
+        <canvas id="interestChart" height="300"></canvas>
+      </div>
     </div>
-  </div>
-  
-  <div class="chart-container">
-    <canvas id="interestChart" height="300"></canvas>
   </div>
 </div>
 

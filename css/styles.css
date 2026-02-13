@@ -24,11 +24,92 @@ h2 {
 /* 🔹 Controls (dropdowns, buttons) */
 /* ========================= */
 .controls {
-  margin-bottom: 25px;
   display: flex;
-  gap: 30px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 20px;
+  align-items: stretch;
+}
+
+.tab-layout {
+  display: flex;
   align-items: flex-start;
+  gap: 24px;
+}
+
+.side-panel {
+  width: 280px;
+  flex-shrink: 0;
+}
+
+.main-panel {
+  flex: 1;
+  min-width: 0;
+}
+
+.tab-content {
+  margin-top: 20px;
+}
+
+#tab-parameters {
+  margin-top: 0;
+}
+
+#tab-economic .controls,
+#tab-interest .controls {
+  margin-bottom: 0;
+}
+
+#tab-economic select,
+#tab-interest select {
+  width: 100%;
+}
+
+#tab-economic .control-group label,
+#tab-interest .control-group label {
+  font-weight: 600;
+}
+
+#tab-interest #interestCountrySelect {
+  min-height: 240px;
+}
+
+#tab-interest #interestVariableSelect {
+  min-height: 84px;
+}
+
+#tab-economic #countrySelect {
+  min-height: 240px;
+}
+
+#tab-economic #variableSelect {
+  min-height: 140px;
+}
+
+.vertical-buttons {
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+}
+
+.vertical-buttons button {
+  width: 100%;
+  text-align: left;
+}
+
+.chart-container {
+  margin: 0;
+  max-width: 100%;
+}
+
+#tab-parameters .chart-container {
+  margin: 30px auto;
+  max-width: 800px;
+}
+
+.buttons {
+  display: flex;
+  gap: 10px; /* space between buttons */
+  flex-wrap: wrap;
 }
 
 /* Control groups (label + select) */
@@ -48,13 +129,6 @@ select {
   font-size: 14px;
   display: block;
   box-sizing: border-box;
-}
-
-/* Buttons container */
-.buttons {
-  display: flex;
-  gap: 10px; /* space between buttons */
-  flex-wrap: wrap;
 }
 
 /* Buttons */
@@ -107,9 +181,7 @@ button:hover {
 .chart-container {
   position: relative;
   width: 100%;
-  max-width: 800px;    /* max width on large screens */
   height: 350px;       /* chart height */
-  margin: 30px auto;   /* center chart */
 }
 
 .chart-container canvas {
@@ -155,6 +227,20 @@ button:hover {
   .controls {
     flex-direction: column;
     gap: 20px;
+  }
+
+  .tab-layout {
+    flex-direction: column;
+  }
+
+  .side-panel,
+  .main-panel {
+    width: 100%;
+  }
+
+  #tab-interest #interestCountrySelect,
+  #tab-economic #countrySelect {
+    min-height: 200px;
   }
 
   .control-group {
