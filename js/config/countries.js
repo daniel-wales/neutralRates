@@ -53,6 +53,27 @@ export const countryPresets = {
 
 export const regionMedianGroups = [
   {
+    code: "WORLD",
+    name: "Median - World",
+    members: countryCatalog.map(country => country.code)
+  },
+  {
+    code: "AE",
+    name: "Median - AE (Advanced Economies)",
+    members: [
+      "aus", "can", "cze", "gbr", "isr", "jpn", "kor", "nor", "nzl", "swe", "usa"
+    ]
+  },
+  {
+    code: "EM",
+    name: "Median - EM (Emerging Market Economies)",
+    members: [
+      "bgd", "blr", "bra", "chl", "col", "cri", "dom", "egy", "gtm", "hun", "idn", "ind",
+      "mex", "mys", "nga", "pak", "per", "phl", "pol", "pry", "rou", "rus", "srb", "tha",
+      "tur", "ury", "vnm", "zaf"
+    ]
+  },
+  {
     code: "AFR",
     name: "Median - AFR (Africa)",
     members: countryCatalog.filter(country => country.group === "Africa").map(country => country.code)

@@ -182,14 +182,54 @@ function getParameterSplitIndex(rows) {
   return rows.findIndex(row => row.parameter.includes("_int"));
 }
 
+const unicodeSubscripts = {
+  "0": "₀",
+  "1": "₁",
+  "2": "₂",
+  "3": "₃",
+  "4": "₄",
+  "5": "₅",
+  "6": "₆",
+  "7": "₇",
+  "8": "₈",
+  "9": "₉",
+  "a": "ₐ",
+  "e": "ₑ",
+  "h": "ₕ",
+  "i": "ᵢ",
+  "j": "ⱼ",
+  "k": "ₖ",
+  "l": "ₗ",
+  "m": "ₘ",
+  "n": "ₙ",
+  "o": "ₒ",
+  "p": "ₚ",
+  "r": "ᵣ",
+  "s": "ₛ",
+  "t": "ₜ",
+  "u": "ᵤ",
+  "v": "ᵥ",
+  "x": "ₓ",
+  "y": "ᵧ",
+  "z": "z",
+  "*": "*"
+};
+
+function toUnicodeSubscript(token) {
+  return token
+    .split("")
+    .map(char => unicodeSubscripts[char] ?? char)
+    .join("");
+}
+
 function formatParameterTick(value) {
   if (typeof value !== "string") return value;
 
   let tick = value.trim();
   if (tick.startsWith("$") && tick.endsWith("$")) tick = tick.slice(1, -1);
 
-  return tick
-    .replace(/_int/g, "_{int}")
+  tick = tick
+    .replace(/_int/g, "^{int}")
     .replace(/\\hat\{y\}/g, "ŷ")
     .replace(/\\sigma/g, "σ")
     .replace(/\\theta/g, "θ")
@@ -197,6 +237,11 @@ function formatParameterTick(value) {
     .replace(/\\beta/g, "β")
     .replace(/\\{\\{/g, "{")
     .replace(/\\}\\}/g, "}");
+
+  tick = tick.replace(/_\{([^}]+)\}/g, (_, token) => toUnicodeSubscript(token));
+  tick = tick.replace(/_([A-Za-z0-9*]+)/g, (_, token) => toUnicodeSubscript(token));
+
+  return tick;
 }
 
 const parameterDividerPlugin = {
@@ -334,6 +379,9 @@ export function renderParameterChart(ctx, rows, selectedSeries = ["prior", "post
           position: "top",
           labels: {
             usePointStyle: true,
+            boxWidth: 8,
+            boxHeight: 8,
+            pointStyleWidth: 8,
             generateLabels: chart => {
               const defaultLabels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
               return defaultLabels.map(item => {
@@ -341,7 +389,8 @@ export function renderParameterChart(ctx, rows, selectedSeries = ["prior", "post
                 return {
                   ...item,
                   pointStyle: dataset?.type === "line" ? "circle" : "rect",
-                  lineWidth: 0
+                  lineWidth: 0,
+                  radius: dataset?.type === "line" ? 4 : 0
                 };
               });
             }
