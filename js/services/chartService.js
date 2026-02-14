@@ -52,6 +52,7 @@ const sourceLabelPlugin = {
 };
 
 export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits = {}) {
+  // Replace, don't mutate: rebuilding avoids stale plugin/axis state across variable switches.
   const existingChart = chartsByCanvas.get(ctx);
   if (existingChart) existingChart.destroy();
 
@@ -190,6 +191,7 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits =
 }
 
 export function renderDecompositionChart(ctx, datasets, labels, yAxisLabel = "", axisLimits = {}) {
+  // Decomposition chart mirrors base chart behavior but uses stacked y-values.
   const existingChart = chartsByCanvas.get(ctx);
   if (existingChart) existingChart.destroy();
 
@@ -378,6 +380,7 @@ function toUnicodeSuperscript(token) {
 }
 
 function formatParameterTick(value) {
+  // Parameter labels arrive in LaTeX-ish syntax; normalize to readable unicode on the axis.
   if (typeof value !== "string") return value;
 
   let tick = value.trim();
@@ -462,6 +465,7 @@ const parameterSectionLabelPlugin = {
 };
 
 export function renderParameterChart(ctx, rows, selectedSeries = ["prior", "posterior", "range"]) {
+  // Compose datasets dynamically so the legend and rendering match current checkbox state.
   const existingChart = chartsByCanvas.get(ctx);
   if (existingChart) existingChart.destroy();
 

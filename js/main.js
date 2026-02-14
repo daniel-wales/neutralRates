@@ -83,6 +83,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Selection + interaction helpers.
   function getSelected(select) {
+    // Keep selection extraction centralized so all sections share the same behavior.
     return Array.from(select.selectedOptions).map(option => option.value);
   }
 
@@ -98,6 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getClampedBounds(values) {
+    // Axis clamping keeps extreme outliers from producing unreadable zoom limits.
     const numericValues = values.filter(Number.isFinite);
     if (!numericValues.length) return {};
 
@@ -116,6 +118,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const countryByCode = new Map(countryCatalog.map(country => [country.code, country]));
 
   function computeOutputGap(outputLevel, trendOutputLevel) {
+    // Output gap is measured in log points, then scaled to percentage points.
     if (!Number.isFinite(outputLevel) || !Number.isFinite(trendOutputLevel) || outputLevel <= 0 || trendOutputLevel <= 0) {
       return null;
     }
@@ -134,6 +137,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     if (key === "observed_growth_rate_yoy") {
+      // YoY growth is built on the fly from level data (same month in prior year).
       const currentDate = data.dates?.[index];
       if (!currentDate) return null;
 
@@ -191,6 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function getSelectionDescriptor(selection, sectionConfig) {
+    // Non-median values map directly to individual country files.
     if (!selection.startsWith("median:")) return { type: "country", file: selection, label: selection };
 
     const groupCode = selection.replace("median:", "");
@@ -198,6 +203,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!group) return { type: "country", file: selection, label: selection };
 
     const supportedCodes = new Set(sectionSupportedCountryCodes[sectionConfig.id] || []);
+    // Median series is computed from the section-compatible members of the selected group.
     const memberFiles = group.members
       .filter(code => !supportedCodes.size || supportedCodes.has(code))
       .map(code => countryByCode.get(code))

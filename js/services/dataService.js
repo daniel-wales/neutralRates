@@ -14,6 +14,7 @@ import { parseCSV } from "../utils/csv.js";
 const cache = {};
 
 function resolveDateColumnIndices(normalizedHeader) {
+  // Most datasets are [Year, Month, ...], but some MATLAB exports prepend a label column.
   const yearIndex = normalizedHeader.indexOf("year");
   const monthIndex = normalizedHeader.indexOf("month");
   if (yearIndex >= 0 && monthIndex >= 0) return { yearIndex, monthIndex };
@@ -27,6 +28,7 @@ function resolveDateColumnIndices(normalizedHeader) {
 }
 
 export async function fetchData(file) {
+  // Return memoized parse results so repeated redraws do not re-fetch/re-parse CSV.
   if (cache[file]) return cache[file];
 
   let res;
@@ -66,6 +68,7 @@ export async function fetchData(file) {
   });
 
   dataRows.forEach(row => {
+    // Skip malformed lines and keep the date + value arrays strictly aligned.
     if (row.length < header.length) return;
 
     const year = Number.parseInt(row[safeYearIndex], 10);
@@ -90,6 +93,7 @@ export async function fetchData(file) {
 }
 
 export async function fetchParameterData(file) {
+  // Parameter tables share the same cache as timeseries files because keys are file paths.
   if (cache[file]) return cache[file];
 
   let res;
