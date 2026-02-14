@@ -215,7 +215,20 @@ export function renderDecompositionChart(ctx, datasets, labels, yAxisLabel = "",
           position: "top",
           labels: {
             color: chartTheme.text,
-            font: { size: 12, weight: "normal" }
+            font: { size: 12, weight: "normal" },
+            generateLabels: (chart) => {
+              const defaultLabels = Chart.defaults.plugins.legend.labels.generateLabels(chart);
+              const seenGroups = new Set();
+
+              return defaultLabels.filter(item => {
+                const dataset = chart.data.datasets[item.datasetIndex];
+                const legendGroup = dataset.legendGroup || `dataset-${item.datasetIndex}`;
+
+                if (seenGroups.has(legendGroup)) return false;
+                seenGroups.add(legendGroup);
+                return true;
+              });
+            }
           }
         },
         tooltip: {
