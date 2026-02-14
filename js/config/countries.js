@@ -113,6 +113,10 @@ export const sectionSupportedCountryCodes = {
     "blr", "bra", "chl", "col", "cri", "dom", "egy", "gtm", "hun", "idn", "ind", "mex", "mys",
     "per", "phl", "pol", "pry", "rou", "srb", "tha", "ury", "usa", "vnm"
   ],
+  decompositions: [
+    "blr", "bra", "chl", "col", "cri", "dom", "egy", "gtm", "hun", "idn", "ind", "mex", "mys",
+    "per", "phl", "pol", "pry", "rou", "srb", "tha", "ury", "usa", "vnm"
+  ],
   parameters: [
     "blr", "bra", "chl", "col", "cri", "dom", "egy", "gtm", "hun", "idn", "ind", "mex", "mys",
     "per", "phl", "pol", "pry", "rou", "srb", "tha", "ury", "usa", "vnm"
@@ -125,7 +129,7 @@ function getOutputCode(country) {
 
 export function getCountryFile(country, section) {
   if (section === "economic") return `${country.code}_Data.csv`;
-  if (section === "interest") return `rstar_HLW_SV_${getOutputCode(country)}.csv`;
+  if (section === "interest" || section === "decompositions") return `rstar_HLW_SV_${getOutputCode(country)}.csv`;
   if (section === "parameters") return `table_param_HLW_SV_${getOutputCode(country)}.csv`;
   return "";
 }
