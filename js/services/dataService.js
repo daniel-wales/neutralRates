@@ -13,6 +13,19 @@ import { parseCSV } from "../utils/csv.js";
  */
 const cache = {};
 
+function resolveDateColumnIndices(normalizedHeader) {
+  const yearIndex = normalizedHeader.indexOf("year");
+  const monthIndex = normalizedHeader.indexOf("month");
+  if (yearIndex >= 0 && monthIndex >= 0) return { yearIndex, monthIndex };
+
+  const firstColumn = normalizedHeader[0] || "";
+  if (firstColumn.includes("matlab") && normalizedHeader.length >= 3) {
+    return { yearIndex: 1, monthIndex: 2 };
+  }
+
+  return { yearIndex: 0, monthIndex: 1 };
+}
+
 export async function fetchData(file) {
   if (cache[file]) return cache[file];
 
@@ -42,11 +55,7 @@ export async function fetchData(file) {
   const series = {};
 
   const normalizedHeader = header.map(col => col.toLowerCase());
-  const yearIndex = normalizedHeader.indexOf("year");
-  const monthIndex = normalizedHeader.indexOf("month");
-
-  const safeYearIndex = yearIndex >= 0 ? yearIndex : 1;
-  const safeMonthIndex = monthIndex >= 0 ? monthIndex : 2;
+  const { yearIndex: safeYearIndex, monthIndex: safeMonthIndex } = resolveDateColumnIndices(normalizedHeader);
   const skippedColumns = new Set([safeYearIndex, safeMonthIndex]);
 
   const valueColumnIndices = [];
