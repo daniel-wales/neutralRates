@@ -129,7 +129,7 @@ function getOutputCode(country) {
 
 export function getCountryFile(country, section) {
   if (section === "economic") return `${country.code}_Data.csv`;
-  if (section === "interest" || section === "decompositions") return `rstar_HLW_SV_${getOutputCode(country)}.csv`;
+  if (section === "interest" || section === "outputs" || section === "decompositions") return `rstar_HLW_SV_${getOutputCode(country)}.csv`;
   if (section === "parameters") return `table_param_HLW_SV_${getOutputCode(country)}.csv`;
   return "";
 }
