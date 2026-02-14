@@ -176,8 +176,47 @@
 </div>
 
 <!-- 4️⃣ Decompositions Tab -->
-<div id="tab-decompositions" class="tab-content" style="display:none;">
-  <p>Decomposition views will appear here.</p>
+<div id="tab-decompositions" class="tab-content" role="tabpanel" aria-labelledby="tab-button-decompositions" aria-hidden="true" style="display:none;">
+  <div class="tab-layout">
+    <div class="side-panel">
+      <div class="controls">
+        <p class="control-hint">Tip: use one country for the clearest component decomposition view.</p>
+        <div class="control-group">
+          <label for="decompositionCountrySelect">Countries:</label>
+          <input id="decompositionCountrySearch" type="search" placeholder="Search countries..." class="country-search">
+          <div class="preset-buttons" id="decompositionPresets">
+            <button type="button" data-preset="US">US</button>
+            <button type="button" data-preset="G7">G7 subset</button>
+            <button type="button" data-preset="EM_ASIA">EM Asia</button>
+            <button type="button" data-preset="CLEAR">Clear</button>
+          </div>
+          <select id="decompositionCountrySelect" multiple size="10"></select>
+        </div>
+
+        <div class="control-group">
+          <label for="decompositionVariableSelect">Variables:</label>
+          <select id="decompositionVariableSelect" size="2">
+            <option value="rstar_lw_decomposition" selected>r star (LW) decomposition</option>
+            <option value="rstar_int_decomposition">r star (INT) decomposition</option>
+          </select>
+        </div>
+
+        <div class="buttons vertical-buttons">
+          <button id="downloadDecompositionPNG">Download PNG</button>
+          <button id="exportDecompositionCSV">Export CSV</button>
+          <button id="resetDecompositionZoom">Reset Zoom</button>
+        </div>
+
+        <p id="decompositionStatus" class="status-message" aria-live="polite"></p>
+      </div>
+    </div>
+
+    <div class="main-panel">
+      <div class="chart-container">
+        <canvas id="decompositionChart" height="300"></canvas>
+      </div>
+    </div>
+  </div>
 </div>
 
 </body>

@@ -189,6 +189,93 @@ export function renderChart(ctx, datasets, labels, yAxisLabel = "", axisLimits =
   return chart;
 }
 
+export function renderDecompositionChart(ctx, datasets, labels, yAxisLabel = "", axisLimits = {}) {
+  const existingChart = chartsByCanvas.get(ctx);
+  if (existingChart) existingChart.destroy();
+
+  const chart = new Chart(ctx, {
+    type: "line",
+    data: { labels, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: {
+        padding: {
+          bottom: 44
+        }
+      },
+      interaction: {
+        mode: "index",
+        intersect: false
+      },
+      plugins: {
+        legend: {
+          position: "top",
+          labels: {
+            color: chartTheme.text,
+            font: { size: 12, weight: "normal" }
+          }
+        },
+        tooltip: {
+          mode: "index",
+          intersect: false,
+          backgroundColor: chartTheme.tooltipBackground,
+          titleColor: chartTheme.text,
+          bodyColor: chartTheme.text,
+          borderColor: chartTheme.tooltipBorder,
+          borderWidth: 1
+        },
+        ...(isZoomPluginAvailable
+          ? {
+              zoom: {
+                limits: { x: axisLimits.x ?? {}, y: axisLimits.y ?? {} },
+                pan: { enabled: true, mode: "x", threshold: 5 },
+                zoom: {
+                  wheel: { enabled: true, speed: 0.1 },
+                  pinch: { enabled: true },
+                  drag: { enabled: true, backgroundColor: "rgba(0,0,0,0.1)" },
+                  mode: "x"
+                }
+              }
+            }
+          : {})
+      },
+      elements: {
+        line: { borderWidth: 2, tension: 0 },
+        point: { radius: 0, hoverRadius: 5 }
+      },
+      scales: {
+        x: {
+          min: axisLimits.x?.min,
+          max: axisLimits.x?.max,
+          ticks: { color: chartTheme.text, maxTicksLimit: 10 },
+          grid: { color: chartTheme.grid, lineWidth: 1 },
+          border: { color: chartTheme.border },
+          title: { display: true, text: "Year-Month", color: chartTheme.text }
+        },
+        y: {
+          stacked: true,
+          min: axisLimits.y?.min,
+          max: axisLimits.y?.max,
+          ticks: {
+            color: chartTheme.text,
+            callback: (value) => Number(value).toLocaleString(undefined, { maximumFractionDigits: 1 })
+          },
+          grid: { color: chartTheme.grid, lineWidth: 1 },
+          border: { color: chartTheme.border },
+          title: { display: true, text: yAxisLabel, color: chartTheme.text }
+        }
+      }
+    },
+    plugins: [sourceLabelPlugin]
+  });
+
+  chartsByCanvas.set(ctx, chart);
+  activeChart = chart;
+
+  return chart;
+}
+
 
 export function getColors(index) {
   return colors[index % colors.length];
