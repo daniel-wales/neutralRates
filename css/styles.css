@@ -67,28 +67,36 @@ h1 {
 
 #tab-economic .controls,
 #tab-interest .controls,
-#tab-parameters .controls {
+#tab-parameters .controls,
+#tab-decompositions .controls {
   margin-bottom: 0;
 }
 
 #tab-economic select,
 #tab-interest select,
-#tab-parameters select {
+#tab-parameters select,
+#tab-decompositions select {
   width: 100%;
 }
 
 #tab-economic .control-group label,
 #tab-interest .control-group label,
-#tab-parameters .control-group label {
+#tab-parameters .control-group label,
+#tab-decompositions .control-group label {
   font-weight: 600;
 }
 
 #tab-interest #interestCountrySelect,
-#tab-parameters #parameterCountrySelect {
+#tab-parameters #parameterCountrySelect,
+#tab-decompositions #decompositionCountrySelect {
   min-height: 240px;
 }
 
 #tab-interest #interestVariableSelect {
+  min-height: 140px;
+}
+
+#tab-decompositions #decompositionVariableSelect {
   min-height: 140px;
 }
 
@@ -112,7 +120,8 @@ h1 {
 }
 
 #tab-economic .main-panel .chart-container,
-#tab-interest .main-panel .chart-container {
+#tab-interest .main-panel .chart-container,
+#tab-decompositions .main-panel .chart-container {
   max-width: 960px;
 }
 
@@ -298,7 +307,8 @@ input[type="search"]:focus-visible {
 
   #tab-interest #interestCountrySelect,
   #tab-economic #countrySelect,
-  #tab-parameters #parameterCountrySelect {
+  #tab-parameters #parameterCountrySelect,
+  #tab-decompositions #decompositionCountrySelect {
     min-height: 200px;
   }
 
