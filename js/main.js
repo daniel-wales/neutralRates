@@ -357,11 +357,13 @@ document.addEventListener("DOMContentLoaded", () => {
           datasets.push({
             label: `${baseLabel} - ${component.label}`,
             data: points,
-            borderColor: component.color.replace("0.45", "1"),
+            borderColor: "transparent",
             backgroundColor: component.color,
-            fill: true,
+            fill: "stack",
+            borderWidth: 0,
             pointRadius: 0,
-            tension: 0.2,
+            pointHoverRadius: 0,
+            tension: 0,
             stack: `${baseLabel}-${variable}`
           });
         });
@@ -380,7 +382,10 @@ document.addEventListener("DOMContentLoaded", () => {
           borderColor: "#000000",
           backgroundColor: "transparent",
           fill: false,
-          tension: 0.2,
+          borderWidth: 2,
+          pointRadius: 0,
+          pointHoverRadius: 3,
+          tension: 0,
           spanGaps: true
         });
       }
