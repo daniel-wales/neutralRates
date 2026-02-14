@@ -10,6 +10,7 @@ import { getChartInstance } from "./chartService.js";
  * - No-ops when chart instance is unavailable.
  */
 function resolveChart(chart) {
+  // Allow explicit chart injection (for section-specific actions) with fallback to active chart.
   return chart || getChartInstance();
 }
 
@@ -20,6 +21,7 @@ function buildFilename(baseName, extension) {
 
 export function exportCSV(chart = null, context = "chart-data") {
   const chartInstance = resolveChart(chart);
+  // Guard keeps UI clicks harmless when no chart has been rendered yet.
   if (!chartInstance) return;
 
   const labels = chartInstance.data.labels;
@@ -54,6 +56,7 @@ export function exportCSV(chart = null, context = "chart-data") {
 
 export function downloadPNG(chart = null, context = "chart") {
   const chartInstance = resolveChart(chart);
+  // Guard keeps UI clicks harmless when no chart has been rendered yet.
   if (!chartInstance) return;
 
   const canvas = chartInstance.canvas;
