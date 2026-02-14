@@ -122,11 +122,11 @@ h1 {
 #tab-economic .main-panel .chart-container,
 #tab-interest .main-panel .chart-container,
 #tab-decompositions .main-panel .chart-container {
-  max-width: 960px;
+  max-width: 900px;
 }
 
 #tab-parameters .chart-container {
-  max-width: 960px;
+  max-width: 900px;
 }
 
 .buttons {

@@ -340,13 +340,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const isLW = variable === "rstar_lw_decomposition";
         const components = isLW
           ? [
-              { key: "gg_home", label: "g", color: "rgba(31, 119, 180, 0.45)" },
-              { key: "lw_z", label: "z", color: "rgba(214, 39, 40, 0.45)" }
+              { key: "gg_home", label: "g", color: "#1f77b4" },
+              { key: "lw_z", label: "z", color: "#d62728" }
             ]
           : [
-              { key: "gg_home_int", label: "g home", color: "rgba(31, 119, 180, 0.45)" },
-              { key: "gg_home_f", label: "g foreign", color: "rgba(44, 160, 44, 0.45)" },
-              { key: "int_z", label: "z int", color: "rgba(214, 39, 40, 0.45)" }
+              { key: "gg_home_int", label: "g home", color: "#1f77b4" },
+              { key: "gg_home_f", label: "g foreign", color: "#2ca02c" },
+              { key: "int_z", label: "z int", color: "#d62728" }
             ];
 
         const totalKey = isLW ? "rstar_lw" : "rstar_lw_int";
