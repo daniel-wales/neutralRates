@@ -360,9 +360,15 @@ document.addEventListener("DOMContentLoaded", () => {
             return getDecompositionValueByDate(selection.data, component.key, date);
           });
 
+          const positivePoints = points.map(value => (Number.isFinite(value) ? Math.max(value, 0) : value));
+          const negativePoints = points.map(value => (Number.isFinite(value) ? Math.min(value, 0) : value));
+
+          const componentLabel = `${baseLabel} - ${component.label}`;
+          const legendGroup = `${baseLabel}-${variable}-${component.label}`;
+
           datasets.push({
-            label: `${baseLabel} - ${component.label}`,
-            data: points,
+            label: componentLabel,
+            data: positivePoints,
             borderColor: "transparent",
             backgroundColor: component.color,
             fill: "stack",
@@ -370,7 +376,24 @@ document.addEventListener("DOMContentLoaded", () => {
             pointRadius: 0,
             pointHoverRadius: 0,
             tension: 0,
-            stack: `${baseLabel}-${variable}`
+            stack: `${baseLabel}-${variable}`,
+            legendGroup,
+            componentLabel
+          });
+
+          datasets.push({
+            label: componentLabel,
+            data: negativePoints,
+            borderColor: "transparent",
+            backgroundColor: component.color,
+            fill: "stack",
+            borderWidth: 0,
+            pointRadius: 0,
+            pointHoverRadius: 0,
+            tension: 0,
+            stack: `${baseLabel}-${variable}`,
+            legendGroup,
+            componentLabel
           });
         });
 
