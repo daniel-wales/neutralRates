@@ -5,7 +5,7 @@
  * tab activation behavior, and status messaging for all dashboard panes.
  */
 import { fetchData, fetchParameterData } from "./services/dataService.js";
-import { renderChart, renderParameterChart, getColors, getChartInstance, zoomPluginLoaded } from "./services/chartService.js";
+import { renderChart, renderDecompositionChart, renderParameterChart, getColors, getChartInstance, zoomPluginLoaded } from "./services/chartService.js";
 import { downloadPNG, exportCSV } from "./services/exportService.js";
 import { variableConfig } from "./config/variables.js";
 import { countryCatalog, countryPresets, regionMedianGroups, sectionSupportedCountryCodes, getCountryFile } from "./config/countries.js";
@@ -45,6 +45,22 @@ document.addEventListener("DOMContentLoaded", () => {
     formatLabel: (file, variable) => `${file.replace("rstar_HLW_SV_", "").replace(".csv", "")} - ${variableConfig[variable]?.[0]?.label ?? variable}`
   };
 
+  const decompositionConfig = {
+    id: "decompositions",
+    selectCountryId: "decompositionCountrySelect",
+    countrySearchId: "decompositionCountrySearch",
+    presetContainerId: "decompositionPresets",
+    selectVariableId: "decompositionVariableSelect",
+    canvasId: "decompositionChart",
+    sourcePath: "results",
+    statusId: "decompositionStatus",
+    resetButtonId: "resetDecompositionZoom",
+    downloadButtonId: "downloadDecompositionPNG",
+    exportButtonId: "exportDecompositionCSV",
+    defaultSelections: ["median:WORLD"],
+    formatLabel: (file, variable) => `${file.replace("rstar_HLW_SV_", "").replace(".csv", "")} - ${variableConfig[variable]?.[0]?.label ?? variable}`
+  };
+
   const parameterConfig = {
     id: "parameters",
     selectCountryId: "parameterCountrySelect",
@@ -60,6 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const countryMetadataBySection = {
     economic: new Map(),
     interest: new Map(),
+    decompositions: new Map(),
     parameters: new Map()
   };
 
@@ -139,6 +156,32 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     return data.series[key]?.[index] ?? null;
+  }
+
+  function getDecompositionValue(data, key, index) {
+    const rstarLW = data.series.rstar_lw?.[index];
+    const gHome = data.series.gg_home?.[index];
+    const rstarInt = data.series.rstar_lw_int?.[index];
+    const gHomeInt = data.series.gg_home_int?.[index];
+    const gForeign = data.series.gg_home_f?.[index];
+
+    if (key === "lw_z") {
+      if (!Number.isFinite(rstarLW) || !Number.isFinite(gHome)) return null;
+      return rstarLW - gHome;
+    }
+
+    if (key === "int_z") {
+      if (!Number.isFinite(rstarInt) || !Number.isFinite(gHomeInt) || !Number.isFinite(gForeign)) return null;
+      return rstarInt - gHomeInt - gForeign;
+    }
+
+    return data.series[key]?.[index] ?? null;
+  }
+
+  function getDecompositionValueByDate(data, key, date) {
+    const index = data.dateIndexMap?.get(date);
+    if (index == null) return null;
+    return getDecompositionValue(data, key, index);
   }
 
   function getSeriesValueByDate(data, key, date) {
@@ -251,6 +294,100 @@ document.addEventListener("DOMContentLoaded", () => {
     return { labels, datasets };
   }
 
+
+  async function buildDecompositionDatasets(selectedCountries, selectedVariables, sectionConfig) {
+    const selections = [];
+
+    for (const selection of selectedCountries) {
+      const descriptor = getSelectionDescriptor(selection, sectionConfig);
+
+      if (descriptor.type === "median") {
+        const memberData = await Promise.all(
+          descriptor.memberFiles.map(file => fetchData(`${sectionConfig.sourcePath}/${file}`))
+        );
+
+        memberData.forEach(data => {
+          if (!data.dateIndexMap) data.dateIndexMap = new Map(data.dates.map((date, idx) => [date, idx]));
+        });
+
+        selections.push({ type: "median", descriptor, memberData });
+        continue;
+      }
+
+      const data = await fetchData(`${sectionConfig.sourcePath}/${descriptor.file}`);
+      if (!data.dateIndexMap) data.dateIndexMap = new Map(data.dates.map((date, idx) => [date, idx]));
+      selections.push({ type: "country", descriptor, data });
+    }
+
+    const labels = getDateLabels(
+      selections.flatMap(item => (item.type === "median" ? item.memberData : [item.data]))
+    );
+
+    const datasets = [];
+
+    for (const selection of selections) {
+      const baseLabel = selection.type === "median"
+        ? selection.descriptor.label
+        : selection.descriptor.file.replace("rstar_HLW_SV_", "").replace(".csv", "");
+
+      for (const variable of selectedVariables) {
+        const isLW = variable === "rstar_lw_decomposition";
+        const components = isLW
+          ? [
+              { key: "gg_home", label: "g", color: "rgba(31, 119, 180, 0.45)" },
+              { key: "lw_z", label: "z", color: "rgba(214, 39, 40, 0.45)" }
+            ]
+          : [
+              { key: "gg_home_int", label: "g home", color: "rgba(31, 119, 180, 0.45)" },
+              { key: "gg_home_f", label: "g foreign", color: "rgba(44, 160, 44, 0.45)" },
+              { key: "int_z", label: "z int", color: "rgba(214, 39, 40, 0.45)" }
+            ];
+
+        const totalKey = isLW ? "rstar_lw" : "rstar_lw_int";
+
+        components.forEach(component => {
+          const points = labels.map(date => {
+            if (selection.type === "median") {
+              return computeMedian(selection.memberData.map(data => getDecompositionValueByDate(data, component.key, date)));
+            }
+
+            return getDecompositionValueByDate(selection.data, component.key, date);
+          });
+
+          datasets.push({
+            label: `${baseLabel} - ${component.label}`,
+            data: points,
+            borderColor: component.color.replace("0.45", "1"),
+            backgroundColor: component.color,
+            fill: true,
+            pointRadius: 0,
+            tension: 0.2,
+            stack: `${baseLabel}-${variable}`
+          });
+        });
+
+        const totalPoints = labels.map(date => {
+          if (selection.type === "median") {
+            return computeMedian(selection.memberData.map(data => getDecompositionValueByDate(data, totalKey, date)));
+          }
+
+          return getDecompositionValueByDate(selection.data, totalKey, date);
+        });
+
+        datasets.push({
+          label: `${baseLabel} - total`,
+          data: totalPoints,
+          borderColor: "#000000",
+          backgroundColor: "transparent",
+          fill: false,
+          tension: 0.2,
+          spanGaps: true
+        });
+      }
+    }
+
+    return { labels, datasets };
+  }
 
   function getAxisLabelAndLimits(selectedVariables, labels, datasets) {
     const units = selectedVariables
@@ -485,10 +622,67 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
+  function setupDecompositionSection(sectionConfig) {
+    const countrySelect = document.getElementById(sectionConfig.selectCountryId);
+    const variableSelect = document.getElementById(sectionConfig.selectVariableId);
+    const canvas = document.getElementById(sectionConfig.canvasId);
+    const statusElement = document.getElementById(sectionConfig.statusId);
+    const resetButton = document.getElementById(sectionConfig.resetButtonId);
+    const downloadButton = document.getElementById(sectionConfig.downloadButtonId);
+    const exportButton = document.getElementById(sectionConfig.exportButtonId);
+
+    const update = async () => {
+      const selectedCountries = getSelected(countrySelect);
+      const selectedVariables = getSelected(variableSelect);
+
+      if (!selectedCountries.length || !selectedVariables.length) {
+        setStatus(statusElement, "Select at least one country and one decomposition variable.", "warning");
+        return;
+      }
+
+      setStatus(statusElement, "Loading decomposition data...", "warning");
+
+      try {
+        const { labels, datasets } = await buildDecompositionDatasets(selectedCountries, selectedVariables, sectionConfig);
+        if (!datasets.length || !labels.length) {
+          setStatus(statusElement, "No usable decomposition data found for the selected filters.", "warning");
+          return;
+        }
+
+        const axisLimits = getAxisLimitsForPercentChart(true, labels, datasets);
+        renderDecompositionChart(canvas, datasets, labels, "Percent", axisLimits);
+        setStatus(statusElement, `Showing ${selectedCountries.length} country(ies) and ${selectedVariables.length} decomposition(s).`, "success");
+      } catch (error) {
+        setStatus(statusElement, `Error loading decomposition chart data: ${error.message}`, "error");
+      }
+    };
+
+    countrySelect.addEventListener("change", update);
+    variableSelect.addEventListener("change", update);
+    if (countrySelect.multiple) enableClickToToggleMultiSelect(countrySelect);
+
+    downloadButton.addEventListener("click", () => downloadPNG(getChartInstance(canvas), `${sectionConfig.id}-chart`));
+    exportButton.addEventListener("click", () => exportCSV(getChartInstance(canvas), `${sectionConfig.id}-chart-data`));
+    resetButton.addEventListener("click", () => {
+      const chart = getChartInstance(canvas);
+      if (chart?.resetZoom) chart.resetZoom();
+    });
+
+    setupCountryControls(sectionConfig, update);
+
+    if (!zoomPluginLoaded()) {
+      setStatus(statusElement, "Chart zoom plugin unavailable (CDN load issue). Pan/zoom controls are disabled.", "warning");
+    }
+
+    return update;
+  }
+
+
   // Tab activation and initial render pass.
   const updateEconomic = setupChartSection(economicConfig);
   const updateParameters = setupParameterSection(parameterConfig);
   const updateInterest = setupChartSection(interestConfig);
+  const updateDecompositions = setupDecompositionSection(decompositionConfig);
 
   const tabButtons = Array.from(document.querySelectorAll(".tab-button"));
 
@@ -509,6 +703,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (target === "economic") updateEconomic();
     if (target === "parameters") updateParameters();
     if (target === "interest") updateInterest();
+    if (target === "decompositions") updateDecompositions();
   };
 
   tabButtons.forEach((button, index) => {
