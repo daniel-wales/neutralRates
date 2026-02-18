@@ -49,7 +49,6 @@ document.addEventListener("DOMContentLoaded", () => {
     id: "decompositions",
     selectCountryId: "decompositionCountrySelect",
     countrySearchId: "decompositionCountrySearch",
-    presetContainerId: "decompositionPresets",
     selectVariableId: "decompositionVariableSelect",
     canvasId: "decompositionChart",
     sourcePath: "results",
@@ -57,7 +56,7 @@ document.addEventListener("DOMContentLoaded", () => {
     resetButtonId: "resetDecompositionZoom",
     downloadButtonId: "downloadDecompositionPNG",
     exportButtonId: "exportDecompositionCSV",
-    defaultSelections: ["median:WORLD"],
+    defaultCountries: ["usa"],
     formatLabel: (file, variable) => `${file.replace("rstar_HLW_SV_", "").replace(".csv", "")} - ${variableConfig[variable]?.[0]?.label ?? variable}`
   };
 
@@ -425,7 +424,7 @@ document.addEventListener("DOMContentLoaded", () => {
     select.innerHTML = "";
     countryMetadataBySection[sectionId].clear();
 
-    if (sectionId !== "parameters") {
+    if (sectionId !== "parameters" && sectionId !== "decompositions") {
       const medianOptgroup = document.createElement("optgroup");
       medianOptgroup.label = "Regional medians";
 
@@ -657,7 +656,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     countrySelect.addEventListener("change", update);
     variableSelect.addEventListener("change", update);
-    if (countrySelect.multiple) enableClickToToggleMultiSelect(countrySelect);
 
     downloadButton.addEventListener("click", () => downloadPNG(getChartInstance(canvas), `${sectionConfig.id}-chart`));
     exportButton.addEventListener("click", () => exportCSV(getChartInstance(canvas), `${sectionConfig.id}-chart-data`));
@@ -667,6 +665,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     setupCountryControls(sectionConfig, update);
+
+    if (countrySelect.options.length && !countrySelect.value) {
+      countrySelect.options[0].selected = true;
+    }
 
     if (!zoomPluginLoaded()) {
       setStatus(statusElement, "Chart zoom plugin unavailable (CDN load issue). Pan/zoom controls are disabled.", "warning");
