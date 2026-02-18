@@ -162,30 +162,10 @@ document.addEventListener("DOMContentLoaded", () => {
     return data.series[key]?.[index] ?? null;
   }
 
-  function getDecompositionValue(data, key, index) {
-    const rstarLW = data.series.rstar_lw?.[index];
-    const gHome = data.series.gg_home?.[index];
-    const rstarInt = data.series.rstar_lw_int?.[index];
-    const gHomeInt = data.series.gg_home_int?.[index];
-    const gForeign = data.series.gg_home_f?.[index];
-
-    if (key === "lw_z") {
-      if (!Number.isFinite(rstarLW) || !Number.isFinite(gHome)) return null;
-      return rstarLW - gHome;
-    }
-
-    if (key === "int_z") {
-      if (!Number.isFinite(rstarInt) || !Number.isFinite(gHomeInt) || !Number.isFinite(gForeign)) return null;
-      return rstarInt - gHomeInt - gForeign;
-    }
-
-    return data.series[key]?.[index] ?? null;
-  }
-
   function getDecompositionValueByDate(data, key, date) {
     const index = data.dateIndexMap?.get(date);
     if (index == null) return null;
-    return getDecompositionValue(data, key, index);
+    return data.series[key]?.[index] ?? null;
   }
 
   function getSeriesValueByDate(data, key, date) {
@@ -338,18 +318,22 @@ document.addEventListener("DOMContentLoaded", () => {
 
       for (const variable of selectedVariables) {
         const isLW = variable === "rstar_lw_decomposition";
+        const totalKey = isLW ? "lw_decomp_r" : "int_decomp_r";
         const components = isLW
           ? [
-              { key: "gg_home", label: "g", color: "#1f77b4" },
-              { key: "lw_z", label: "z", color: "#d62728" }
+              { key: "lw_decomp_g_pos", legendLabel: "g", color: "#1f77b4" },
+              { key: "lw_decomp_g_neg", legendLabel: "g", color: "#1f77b4" },
+              { key: "lw_decomp_z_pos", legendLabel: "z", color: "#d62728" },
+              { key: "lw_decomp_z_neg", legendLabel: "z", color: "#d62728" }
             ]
           : [
-              { key: "gg_home_int", label: "g home", color: "#1f77b4" },
-              { key: "gg_home_f", label: "g foreign", color: "#2ca02c" },
-              { key: "int_z", label: "z int", color: "#d62728" }
+              { key: "int_decomp_gh_pos", legendLabel: "gh", color: "#1f77b4" },
+              { key: "int_decomp_gh_neg", legendLabel: "gh", color: "#1f77b4" },
+              { key: "int_decomp_gf_pos", legendLabel: "gf", color: "#2ca02c" },
+              { key: "int_decomp_gf_neg", legendLabel: "gf", color: "#2ca02c" },
+              { key: "int_decomp_z_pos", legendLabel: "z", color: "#d62728" },
+              { key: "int_decomp_z_neg", legendLabel: "z", color: "#d62728" }
             ];
-
-        const totalKey = isLW ? "rstar_lw" : "rstar_lw_int";
 
         components.forEach(component => {
           const points = labels.map(date => {
@@ -360,40 +344,18 @@ document.addEventListener("DOMContentLoaded", () => {
             return getDecompositionValueByDate(selection.data, component.key, date);
           });
 
-          const positivePoints = points.map(value => (Number.isFinite(value) ? Math.max(value, 0) : value));
-          const negativePoints = points.map(value => (Number.isFinite(value) ? Math.min(value, 0) : value));
-
-          const componentLabel = `${baseLabel} - ${component.label}`;
-          const legendGroup = `${baseLabel}-${variable}-${component.label}`;
-
           datasets.push({
-            label: componentLabel,
-            data: positivePoints,
+            type: "bar",
+            label: `${baseLabel} - ${component.legendLabel}`,
+            data: points,
             borderColor: "transparent",
             backgroundColor: component.color,
-            fill: "stack",
             borderWidth: 0,
             pointRadius: 0,
             pointHoverRadius: 0,
-            tension: 0,
             stack: `${baseLabel}-${variable}`,
-            legendGroup,
-            componentLabel
-          });
-
-          datasets.push({
-            label: componentLabel,
-            data: negativePoints,
-            borderColor: "transparent",
-            backgroundColor: component.color,
-            fill: "stack",
-            borderWidth: 0,
-            pointRadius: 0,
-            pointHoverRadius: 0,
-            tension: 0,
-            stack: `${baseLabel}-${variable}`,
-            legendGroup,
-            componentLabel
+            legendGroup: `${baseLabel}-${variable}-${component.legendLabel}`,
+            order: 2
           });
         });
 
@@ -406,6 +368,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
 
         datasets.push({
+          type: "line",
           label: `${baseLabel} - total`,
           data: totalPoints,
           borderColor: "#000000",
@@ -415,7 +378,8 @@ document.addEventListener("DOMContentLoaded", () => {
           pointRadius: 0,
           pointHoverRadius: 3,
           tension: 0,
-          spanGaps: true
+          spanGaps: true,
+          order: 1
         });
       }
     }
